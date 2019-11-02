@@ -6,7 +6,7 @@ import time
 import os
 
 # Load the video
-videoLoad = 'v4'
+videoLoad = 'v2'
 cap = cv.VideoCapture('./VisionSample/' + videoLoad + '.mp4')
 
 # Check if camera opened successfully

@@ -3,9 +3,11 @@ from Detection import Detect
 import cv2 as cv
 import numpy as np
 import time
+import os
 
 # Load the video
-cap = cv.VideoCapture('../VisionSample/New (4).mp4')
+videoLoad = 'v4'
+cap = cv.VideoCapture('./VisionSample/' + videoLoad + '.mp4')
 
 # Check if camera opened successfully
 if (cap.isOpened() == False):

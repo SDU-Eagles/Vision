@@ -34,5 +34,7 @@ while(True):
     ch = cv.waitKey(30)
     if ch & 0xFF == ord('q'):
         break
+    elif ch & 0xFF == ord('p'):
+        cv.waitKey()
 # When everything done, release the video capture object
 cap.release()

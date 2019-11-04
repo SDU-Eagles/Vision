@@ -38,21 +38,19 @@ def Detect(im):
             keepAspectRatio = aspectRatio >= 0.8 and aspectRatio <= 1.2
 
             # ensure that the contour passes all our tests
-
             if keepDims and keepSolidity and keepAspectRatio:
-                # draw an outline around the target and update the status
-                # text
+                # draw an outline around the target and update the status text
                 cv2.drawContours(im, [approx], -1, (0, 0, 255), 4)
                 print('contour', approx)
-                status = "Target(s) Acquired"
+                # status = "Target(s) Acquired"
 
-                r=cv2.minAreaRect(approx)
-                k=cv2.boxPoints(r)
+                r = cv2.minAreaRect(approx)
+                k = cv2.boxPoints(r)
                 pts1 = np.float32([k[3], k[0], k[2], k[1]])
                 pts2 = np.float32([[0, 0], [300, 0], [0, 300], [300, 300]])
 
                 M = cv2.getPerspectiveTransform(pts1, pts2)
                 dst = cv2.warpPerspective(im, M, (300, 300))
-                cv2.imshow('cropppp', dst)
+                cv2.imshow('crop of detection', dst)
 
     return im

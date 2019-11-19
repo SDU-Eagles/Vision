@@ -43,7 +43,7 @@ def GrassRemover(im):
 if (__name__ == '__main__'):
 
     # Load the video
-    cap = cv.VideoCapture('v4.mp4')
+    cap = cv.VideoCapture('../VisionSample/New1.mp4')
 
     # Check if camera opened successfully
     if (cap.isOpened() == False):

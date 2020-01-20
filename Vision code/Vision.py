@@ -6,9 +6,10 @@ import time
 import datetime
 import tesserocr
 from tesserocr import PyTessBaseAPI, PSM
+from os.path import dirname, abspath
 
 # Load the video
-cap = cv.VideoCapture('../../VisionSample/New (1).mp4')
+cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
 
 # Check if camera opened successfully
 if (cap.isOpened() == False):
@@ -17,7 +18,7 @@ if (cap.isOpened() == False):
 # Open Tesseract api
 # With Page Seperation Mode as Single Character
 # And english language
-with PyTessBaseAPI(path='../../tessdata_fast-master', psm=PSM.SINGLE_CHAR, lang='eng') as api:
+with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdata_fast-master', psm=PSM.SINGLE_CHAR, lang='eng') as api:
     # Only look for Alpha Numeric
     # TODO This has some problems
     # Since it will still return non alphanumeric characters.

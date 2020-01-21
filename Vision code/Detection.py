@@ -22,16 +22,16 @@ def Detect(im, ref, api):
         if len(approx) >= 4 and len(approx) <= 6:
             # Compute the bounding box of the approximated contour
             (x, y, w, h) = cv2.boundingRect(approx)
-            # Use the bounding box to compute the aspect ratio
-            aspectRatio = w / float(h)
 
-            # TODO New, and better, way to find ascpect ration
-            # Code is not in use yet
-            # But should be more accurate
+            # Get rectangle
             r = cv2.minAreaRect(approx)
             k = cv2.boxPoints(r)
             cv2.polylines(ref, np.int32([k]), True, (0, 255, 0))
-            cv2.rectangle(ref,(x,y),(x+w,y+h),(255,0,0))
+            cv2.rectangle(ref, (x, y), (x + w, y + h), (255, 0, 0))
+
+            # Calculate aspect ratio
+            (x, y), (width, height), angle = r
+            aspectRatio = min(width, height) / max(width, height)
 
             # Compute the solidity of the original contour
             area = cv2.contourArea(c)
@@ -48,11 +48,15 @@ def Detect(im, ref, api):
             keepDims = w > 25 and h > 25
             keepSolidity = solidity > 0.9
             keepAspectRatio = aspectRatio >= 0.8 and aspectRatio <= 1.2
+            
+            # Calculate score
+            score = aspectRatio * 100 + solidity * 100
+            print (score)
 
             # ensure that the contour passes all our tests
             if keepDims and keepSolidity and keepAspectRatio:
                 # Draw an outline around the target and update the status text
-                #cv2.drawContours(im, [approx], -1, (0, 0, 255), 4)
+                cv2.drawContours(im, [approx], -1, (0, 0, 255), 4)
                 #print('contour', approx)
 
                 # TODO Make more efficient, this is also being done earlier
@@ -80,6 +84,7 @@ def Detect(im, ref, api):
 
                 # Show the projected image of the marker
                 cv2.imshow('cropppp', dst)
+                cv2.imshow('cropppp', ref)
 
                 # TODO Remove when scoring system is done
                 # Currently need to break

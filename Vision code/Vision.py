@@ -22,8 +22,11 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
     # Only look for Alpha Numeric
     # TODO This has some problems
     # Since it will still return non alphanumeric characters.
+    
+    # TODO - doesn't '...' have to be "..."?
+    # Added lowercase letters
     api.SetVariable('tessedit_char_whitelist',
-                        'ABCDEFGHIJKLMNOPQRSTUVXYZW1234567890')
+                        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
 
     # Read until video is completed
     ret = True

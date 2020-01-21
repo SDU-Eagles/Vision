@@ -17,12 +17,15 @@ if (cap.isOpened() == False):
 # Open Tesseract api
 # With Page Seperation Mode as Single Character
 # And english language
-with PyTessBaseAPI(path='../../tessdata_fast-master', psm=PSM.SINGLE_CHAR, lang='eng') as api:
+with PyTessBaseAPI(path='../../tessdata_fast-master', psm = PSM.SINGLE_CHAR, lang = 'eng') as api:
     # Only look for Alpha Numeric
     # TODO This has some problems
     # Since it will still return non alphanumeric characters.
+    
+    # TODO - doesn't '...' have to be "..."?
+    # Added lowercase letters
     api.SetVariable('tessedit_char_whitelist',
-                        'ABCDEFGHIJKLMNOPQRSTUVXYZW1234567890')
+                        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
 
     # Read until video is completed
     ret = True

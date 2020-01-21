@@ -65,7 +65,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         cv.imshow("Detection", t)
 
         # Quit if 'q' is pressed
-        ch = cv.waitKey(1)
+        ch = cv.waitKey()
         if ch & 0xFF == ord('q'):
             break
         

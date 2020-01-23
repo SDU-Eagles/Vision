@@ -28,32 +28,8 @@ def Detect(im, ref, api):
 
             # Temporary till marker class implemented
             if score > 190:
-                # Draw an outline around the target and update the status text
-                cv2.drawContours(im, [approx], -1, (0, 0, 255), 4)
-                #print('contour', approx)
-
-                # TODO Make more efficient, this is also being done earlier
-                # Get the corners of the marker
-                r=cv2.minAreaRect(approx)
-                k=cv2.boxPoints(r)
-                
-                # The corners of the marker
-                pts1 = np.float32([k[3], k[0], k[2], k[1]])
-                # TODO Make the size of the square a variable
-                # TODO Probably dont need to create this every time
-                # The projection square
-                pts2 = np.float32([[0, 0], [20, 0], [0, 20], [20, 20]])
-
-                # Get transformation matrix and transform it on a n x n sqaure
-                M = cv2.getPerspectiveTransform(pts1, pts2)
-                dst = cv2.warpPerspective(im, M, (20, 20))
-				
-                # Invert colors for better OCR result
-                dst = cv2.bitwise_not(dst)
-				
-                # TODO Move this to the main function
                 # Run OCR 
-                OCR(dst, api)
+                OCR(m.getProjMarker(im), api)
 
                 # Show the projected image of the marker
                 cv2.imshow('cropppp', dst)

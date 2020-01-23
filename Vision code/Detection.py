@@ -84,7 +84,7 @@ def Detect(im, ref, api):
 
                 # Show the projected image of the marker
                 cv2.imshow('cropppp', dst)
-                cv2.imshow('cropppp', ref)
+                cv2.imshow('cropdsa', ref)
 
                 # TODO Remove when scoring system is done
                 # Currently need to break

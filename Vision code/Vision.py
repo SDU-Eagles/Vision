@@ -26,7 +26,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
     # TODO - doesn't '...' have to be "..."?
     # Added lowercase letters
     api.SetVariable('tessedit_char_whitelist',
-                        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+                        'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
 
     # Read until video is completed
     ret = True
@@ -53,19 +53,19 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         ### DEBUG ###
         #############
         # Show original image
-        cv.namedWindow("Original", cv.WINDOW_NORMAL)
-        cv.imshow("Original", im)
+        #cv.namedWindow("Original", cv.WINDOW_NORMAL)
+        #cv.imshow("Original", im)
         # Show image without grass
-        cv.namedWindow("No Grass Image", cv.WINDOW_NORMAL)
-        cv.imshow("No Grass Image", NoGrassGray)
+        #cv.namedWindow("No Grass Image", cv.WINDOW_NORMAL)
+        #cv.imshow("No Grass Image", NoGrassGray)
         # Show the Detect result
         # TODO This currently just returns the input image
         # While it should return the detection so OCR will be run in this file
-        cv.namedWindow("Detection", cv.WINDOW_NORMAL)
-        cv.imshow("Detection", t)
+        #cv.namedWindow("Detection", cv.WINDOW_NORMAL)
+        #cv.imshow("Detection", t)
 
         # Quit if 'q' is pressed
-        ch = cv.waitKey(1)
+        ch = cv.waitKey()
         if ch & 0xFF == ord('q'):
             break
         

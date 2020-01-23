@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import pytesseract
 from OCR import OCR
+from Marker import Marker
 
 def Detect(im, ref, api):
     # Blur image and detect edges
@@ -20,41 +21,13 @@ def Detect(im, ref, api):
 
         # Ensure that the approximated contour is "roughly" rectangular
         if len(approx) >= 4 and len(approx) <= 6:
-            # Compute the bounding box of the approximated contour
-            (x, y, w, h) = cv2.boundingRect(approx)
-
-            # Get rectangle
-            r = cv2.minAreaRect(approx)
-            k = cv2.boxPoints(r)
-            cv2.polylines(ref, np.int32([k]), True, (0, 255, 0))
-            cv2.rectangle(ref, (x, y), (x + w, y + h), (255, 0, 0))
-
-            # Calculate aspect ratio
-            (x, y), (width, height), angle = r
-            aspectRatio = min(width, height) / max(width, height)
-
-            # Compute the solidity of the original contour
-            area = cv2.contourArea(c)
-            hullArea = cv2.contourArea(cv2.convexHull(c))
-            solidity = area / float(hullArea)
-
-            # TODO Rewrite this as a score function
-            # Giving each contour a score
-            # And assuming the highest score is correct
-            # Currently it returns two contours for one marker
-
-            # Compute whether or not the width and height, solidity, and
-            # aspect ratio of the contour falls within appropriate bounds
-            keepDims = w > 25 and h > 25
-            keepSolidity = solidity > 0.9
-            keepAspectRatio = aspectRatio >= 0.8 and aspectRatio <= 1.2
+            m = Marker(c,approx)
             
             # Calculate score
-            score = aspectRatio * 100 + solidity * 100
-            print (score)
+            score = m.getScore()
 
-            # ensure that the contour passes all our tests
-            if keepDims and keepSolidity and keepAspectRatio:
+            # Temporary till marker class implemented
+            if score > 190:
                 # Draw an outline around the target and update the status text
                 cv2.drawContours(im, [approx], -1, (0, 0, 255), 4)
                 #print('contour', approx)

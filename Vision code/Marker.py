@@ -38,15 +38,22 @@ class Marker:
 
         # Calculate aspect ratio
         aspectRatio = min(width, height) / max(width, height)
+        # Use it to calculate score
+        self.score += aspectRatio * 100
 
         # Compute the solidity of the original contour
         # TODO Change this to use convex hull and min area rect
         area = cv2.contourArea(self.c)
         hullArea = cv2.contourArea(cv2.convexHull(self.c))
         solidity = area / float(hullArea)
+        # Use it to calculate score
+        self.score += solidity * 100
 
-        # Calculate and return the score
-        return aspectRatio * 100 + solidity * 100
+        # Ignore smaller squares
+        self.score += (width - 50) * 2
+        self.score += (height - 50) * 2
+
+        return self.score
 
     def getProjMarker(self, im):
         # Get box points of min area rect
@@ -61,3 +68,15 @@ class Marker:
 
         # Invert colors for better OCR result
         return cv2.bitwise_not(dst)
+
+    # Draw the marker on img, with the score next to it
+    def drawMarker(self, img):
+        # Draw rectangle around marker
+        box = cv2.boxPoints(self.r) 
+        box = np.int0(box)
+        cv2.drawContours(img, [box], 0, (0, 0, 255), 2)
+
+        # Draw score
+        (x, y), (width, height), angle = self.r
+        cv2.putText(img, str(self.score), (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0,255,0))
+        return img

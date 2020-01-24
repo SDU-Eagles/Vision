@@ -61,8 +61,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         # Show the Detect result
         # TODO This currently just returns the input image
         # While it should return the detection so OCR will be run in this file
-        #cv.namedWindow("Detection", cv.WINDOW_NORMAL)
-        #cv.imshow("Detection", t)
+        cv.imshow("Detection", t)
 
         # Quit if 'q' is pressed
         ch = cv.waitKey()

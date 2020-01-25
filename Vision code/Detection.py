@@ -29,10 +29,14 @@ def Detect(im, ref, api):
             # Temporary till marker class implemented
             if score > 280:
                 # Run OCR 
-                OCR(m.getProjMarker(im), api)
+                improj = m.getProjMarker(im)
+                refproj = m.getProjMarker(ref)
+                alphanum = OCR(improj, api)
 
-                ref = m.drawMarker(ref, (255, 0, 0))
-                cv2.drawContours(ref, c, -1, (0, 255, 0), 3)
+                #cv2.drawContours(ref, c, -1, (0, 255, 0), 3)
+                c = m.getColor(refproj, improj)
+
+                ref = m.drawMarker(ref, c, alphanum)
 
                 # TODO Remove when scoring system is done
                 # Currently need to break

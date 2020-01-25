@@ -9,7 +9,8 @@ from tesserocr import PyTessBaseAPI, PSM
 from os.path import dirname, abspath
 
 # Load the video
-cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
+#cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (3).mp4')
+cap = cv.VideoCapture(0)
 
 # Check if camera opened successfully
 if (cap.isOpened() == False):
@@ -64,7 +65,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         cv.imshow("Detection", t)
 
         # Quit if 'q' is pressed
-        ch = cv.waitKey()
+        ch = cv.waitKey(1)
         if ch & 0xFF == ord('q'):
             break
         

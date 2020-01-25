@@ -6,7 +6,7 @@ class Marker:
     # External Variables #
     ######################
     # Marker ocr size
-    msize = 20
+    msize = 40
 
     ######################
     # Internal Variables #
@@ -34,7 +34,8 @@ class Marker:
     def getScore(self):
         # Get min area rectangle
         r = cv2.minAreaRect(self.approx)
-        (x, y), (width, height), angle = r
+        (x,y), (width, height), angle = r
+        self.center = (int(x), int(y))
 
         # Calculate aspect ratio
         aspectRatio = min(width, height) / max(width, height)
@@ -56,7 +57,7 @@ class Marker:
         if (width < 25 or height < 25):
             self.score -= 1000
 
-        print(self.score, aspectRatio, solidity, squareness)
+        #print(self.score, aspectRatio, solidity, squareness)
         return self.score
 
     def getProjMarker(self, im):
@@ -68,21 +69,43 @@ class Marker:
 
         # Get transformation matrix and transform it on a n x n sqaure
         M = cv2.getPerspectiveTransform(pts, self.psqr)
-        dst = cv2.warpPerspective(im, M, (20, 20))
+        dst = cv2.warpPerspective(im, M, (self.msize, self.msize))
 
         # Invert colors for better OCR result
-        return cv2.bitwise_not(dst)
+        return dst
 
     # Draw the marker on img, with the score next to it
-    def drawMarker(self, img, colour):
+    def drawMarker(self, img, c, alphanum):
         # Draw rectangle around marker
         box = cv2.boxPoints(self.r) 
         box = np.int0(box)
-        cv2.drawContours(img, [box], 0, colour, 2)
+        cv2.drawContours(img, [box], 0, (255,0,0), 2)
 
         # Draw score
-        (x, y), (width, height), angle = self.r
-        cv2.putText(img, str(self.score), (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, colour)
+        cv2.putText(img, str(int(self.score)) + " " + c + " " + alphanum, self.center,
+                    cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0,0,255))
+
+        # Draw center
+        cv2.circle(img, self.center, 1, (255,0,0))
 
         # Return image with marker
         return img
+
+    def getColor(self, colorproj, ngproj):
+        # Convert the BGR projection to HSV
+        hsv = cv2.cvtColor(colorproj, cv2.COLOR_BGR2HSV)
+        # Remove the alphanumeric from the marker
+        new = hsv[ngproj < 100]
+        # Get average hue
+        avghue = np.average(new, axis=0)[0] * 2
+        # Return the color as text
+        print(avghue)
+        if (30 >= avghue or avghue >= 330): return "Red"
+        elif (avghue <= 30): return "Orange"
+        elif (avghue <= 70): return "Yellow"
+        elif (avghue <= 140): return "Yellow"
+        elif (avghue <= 200): return "Light blue"
+        elif (avghue <= 255): return "Blue"
+        elif (avghue <= 290): return "Purple"
+        elif (avghue <= 330): return "Pink"
+        return "Undefined"

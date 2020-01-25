@@ -50,8 +50,8 @@ class Marker:
         self.score += solidity * 100
 
         # Ignore smaller squares
-        self.score += (width - 50) * 2
-        self.score += (height - 50) * 2
+        if (width < 25 or height < 25):
+            self.score -= 1000
 
         return self.score
 
@@ -70,13 +70,15 @@ class Marker:
         return cv2.bitwise_not(dst)
 
     # Draw the marker on img, with the score next to it
-    def drawMarker(self, img):
+    def drawMarker(self, img, colour):
         # Draw rectangle around marker
         box = cv2.boxPoints(self.r) 
         box = np.int0(box)
-        cv2.drawContours(img, [box], 0, (0, 0, 255), 2)
+        cv2.drawContours(img, [box], 0, colour, 2)
 
         # Draw score
         (x, y), (width, height), angle = self.r
-        cv2.putText(img, str(self.score), (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0,255,0))
+        cv2.putText(img, str(self.score), (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, colour)
+
+        # Return image with marker
         return img

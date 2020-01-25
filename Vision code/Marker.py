@@ -46,13 +46,17 @@ class Marker:
         area = cv2.contourArea(self.c)
         hullArea = cv2.contourArea(cv2.convexHull(self.c))
         solidity = area / float(hullArea)
+        rarea = float(width * height)
+        squareness = min(area,rarea) / max(area,rarea)
         # Use it to calculate score
+        self.score += squareness * 100
         self.score += solidity * 100
 
         # Ignore smaller squares
         if (width < 25 or height < 25):
             self.score -= 1000
 
+        print(self.score, aspectRatio, solidity, squareness)
         return self.score
 
     def getProjMarker(self, im):

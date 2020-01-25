@@ -11,8 +11,6 @@ def Detect(im, ref, api):
     # Find contours in the edge map
     cnts, hierarchy = cv2.findContours(edged, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    cv2.drawContours(ref, cnts, -1, (0,255,0), 3)
-
     for c in cnts:
         # Approximate the contour
         peri = cv2.arcLength(c, True)
@@ -29,16 +27,17 @@ def Detect(im, ref, api):
             #ref = m.drawMarker(ref, (0, 0, 255))
 
             # Temporary till marker class implemented
-            if score > 270:
+            if score > 280:
                 # Run OCR 
                 OCR(m.getProjMarker(im), api)
 
                 ref = m.drawMarker(ref, (255, 0, 0))
+                cv2.drawContours(ref, c, -1, (0, 255, 0), 3)
 
                 # TODO Remove when scoring system is done
                 # Currently need to break
                 # So it only runs OCR on one marker once
-                #break
+                break
             
     # Return original image for debug purposes
     return ref

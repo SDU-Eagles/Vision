@@ -9,7 +9,7 @@ from tesserocr import PyTessBaseAPI, PSM
 from os.path import dirname, abspath
 
 # Load the video
-cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
+cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (3).mp4')
 
 # Check if camera opened successfully
 if (cap.isOpened() == False):

@@ -6,6 +6,9 @@ import cv2
 import threading
 
 def OCR(im,api):
+    # Show OCR image
+    cv2.imshow("OCR", im)
+
     # The highest word confidence
     conf = 0
     # The character with the highest word confidence

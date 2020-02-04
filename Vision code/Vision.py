@@ -9,7 +9,11 @@ from tesserocr import PyTessBaseAPI, PSM
 from os.path import dirname, abspath
 
 # Load the video
-cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
+#cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
+#cap = cv.VideoCapture(0)
+cap = cv.VideoCapture("rtsp://192.168.42.1/live")
+#cap = cv.VideoCapture(
+#    "rtspsrc location=rtsp://192.168.42.1/live ! appsink max-buffers=1 drop=true")
 
 # Check if camera opened successfully
 if (cap.isOpened() == False):
@@ -26,11 +30,12 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
     # TODO - doesn't '...' have to be "..."?
     # Added lowercase letters
     api.SetVariable('tessedit_char_whitelist',
-                        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+                        'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
 
     # Read until video is completed
     ret = True
     while (True):
+        cap.grab()
         ret, frame = cap.read() 
         if (not ret):
             break
@@ -53,15 +58,14 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         ### DEBUG ###
         #############
         # Show original image
-        cv.namedWindow("Original", cv.WINDOW_NORMAL)
-        cv.imshow("Original", im)
+        #cv.namedWindow("Original", cv.WINDOW_NORMAL)
+        #cv.imshow("Original", im)
         # Show image without grass
-        cv.namedWindow("No Grass Image", cv.WINDOW_NORMAL)
+        #cv.namedWindow("No Grass Image", cv.WINDOW_NORMAL)
         cv.imshow("No Grass Image", NoGrassGray)
         # Show the Detect result
         # TODO This currently just returns the input image
         # While it should return the detection so OCR will be run in this file
-        cv.namedWindow("Detection", cv.WINDOW_NORMAL)
         cv.imshow("Detection", t)
      
         # Quit if 'q' is pressed

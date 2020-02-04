@@ -6,6 +6,12 @@ import cv2
 import threading
 
 def OCR(im,api):
+    # Invert colors for better result
+    im = cv2.bitwise_not(im)
+
+    # Show OCR image
+    cv2.imshow("OCR", im)
+
     # The highest word confidence
     conf = 0
     # The character with the highest word confidence
@@ -32,3 +38,4 @@ def OCR(im,api):
         
     # Print the highscore, with the confidence
     print("Character: {0} : Confidence {1}".format(char,conf))
+    return char

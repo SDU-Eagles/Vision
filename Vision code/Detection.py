@@ -31,10 +31,14 @@ def Detect(im, ref, api):
                 # Run OCR 
                 improj = m.getProjMarker(im)
                 refproj = m.getProjMarker(ref)
+
+                kernel = np.ones((2, 2), np.uint8)
+                improj = cv2.dilate(improj, kernel, iterations=1)
+
                 alphanum = OCR(improj, api)
 
                 #cv2.drawContours(ref, c, -1, (0, 255, 0), 3)
-                c = m.getColor(refproj, improj)
+                c = m.getColor(refproj, improj) 
 
                 ref = m.drawMarker(ref, c, alphanum)
 

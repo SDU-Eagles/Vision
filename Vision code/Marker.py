@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from sklearn.cluster import KMeans
 
 class Marker:
     ######################
@@ -7,6 +8,8 @@ class Marker:
     ######################
     # Marker ocr size
     msize = 40
+    # Cutoff sides of projection
+    sco = 1
 
     ######################
     # Internal Variables #
@@ -25,6 +28,8 @@ class Marker:
     # The projection square
     psqr = np.float32(
         [[0, 0], [msize, 0], [0, msize], [msize, msize]])
+    # Dominant color
+    dcolor = None
 
     def __init__(self, c, approx):
         self.c = c
@@ -49,9 +54,12 @@ class Marker:
         solidity = area / float(hullArea)
         rarea = float(width * height)
         squareness = min(area,rarea) / max(area,rarea)
+
         # Use it to calculate score
         self.score += squareness * 100
         self.score += solidity * 100
+
+        # Calculate dominant color
 
         # Ignore smaller squares
         if (width < 25 or height < 25):
@@ -69,7 +77,9 @@ class Marker:
 
         # Get transformation matrix and transform it on a n x n sqaure
         M = cv2.getPerspectiveTransform(pts, self.psqr)
-        dst = cv2.warpPerspective(im, M, (self.msize, self.msize))
+        dst = cv2.warpPerspective(im, M, (self.msize + self.sco * 2, self.msize + self.sco * 2))
+        dst = dst[self.sco:self.msize - self.sco,
+                  self.sco:self.msize - self.sco]
 
         # Invert colors for better OCR result
         return dst
@@ -92,14 +102,24 @@ class Marker:
         return img
 
     def getColor(self, colorproj, ngproj):
-        # Convert the BGR projection to HSV
-        hsv = cv2.cvtColor(colorproj, cv2.COLOR_BGR2HSV)
         # Remove the alphanumeric from the marker
-        new = hsv[ngproj < 100]
-        # Get average hue
-        avghue = np.average(new, axis=0)[0] * 2
+        new = colorproj[ngproj < 100]
+        # Get average BGR values
+        avgrgb = np.uint8([[np.average(new, axis=0)]])
+        # Get hue
+        avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0,0,0] * 2
+
+        reshape = colorproj.reshape(
+            (colorproj.shape[0] * colorproj.shape[1], 3))
+
+
+        # Find and display most dominant colors
+        cluster = KMeans(n_clusters=2).fit(reshape)
+        visualize = self.visualize_colors(cluster, cluster.cluster_centers_)
+        #visualize = cv2.cvtColor(visualize, cv2.COLOR_RGB2BGR)
+        cv2.imshow('visualize', visualize)
+
         # Return the color as text
-        print(avghue)
         if (30 >= avghue or avghue >= 330): return "Red"
         elif (avghue <= 30): return "Orange"
         elif (avghue <= 70): return "Yellow"
@@ -109,3 +129,25 @@ class Marker:
         elif (avghue <= 290): return "Purple"
         elif (avghue <= 330): return "Pink"
         return "Undefined"
+
+    def getDominantColor(self):
+        pass
+
+    def visualize_colors(self, cluster, centroids):
+        # Get the number of different clusters, create histogram, and normalize
+        labels = np.arange(0, len(np.unique(cluster.labels_)) + 1)
+        (hist, _) = np.histogram(cluster.labels_, bins=labels)
+        hist = hist.astype("float")
+        hist /= hist.sum()
+
+        # Create frequency rect and iterate through each cluster's color and percentage
+        rect = np.zeros((50, 300, 3), dtype=np.uint8)
+        colors = sorted([(percent, color) for (percent, color) in zip(hist, centroids)])
+        start = 0
+        for (percent, color) in colors:
+            print(color, "{:0.2f}%".format(percent * 100))
+            end = start + (percent * 300)
+            cv2.rectangle(rect, (int(start), 0), (int(end), 50),
+                      color.astype("uint8").tolist(), -1)
+            start = end
+        return rect

@@ -63,7 +63,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         # While it should return the detection so OCR will be run in this file
         cv.namedWindow("Detection", cv.WINDOW_NORMAL)
         cv.imshow("Detection", t)
-
+     
         # Quit if 'q' is pressed
         ch = cv.waitKey()
         if ch & 0xFF == ord('q'):

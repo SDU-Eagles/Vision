@@ -9,7 +9,7 @@ class Marker:
     # Marker ocr size
     msize = 40
     # Cutoff sides of projection
-    sco = 1
+    sco = 5
 
     ######################
     # Internal Variables #
@@ -102,22 +102,8 @@ class Marker:
         return img
 
     def getColor(self, colorproj, ngproj):
-        # Remove the alphanumeric from the marker
-        new = colorproj[ngproj < 100]
-        # Get average BGR values
-        avgrgb = np.uint8([[np.average(new, axis=0)]])
-        # Get hue
-        avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0,0,0] * 2
-
-        reshape = colorproj.reshape(
-            (colorproj.shape[0] * colorproj.shape[1], 3))
-
-
-        # Find and display most dominant colors
-        cluster = KMeans(n_clusters=2).fit(reshape)
-        visualize = self.visualize_colors(cluster, cluster.cluster_centers_)
-        #visualize = cv2.cvtColor(visualize, cv2.COLOR_RGB2BGR)
-        cv2.imshow('visualize', visualize)
+        avghue = self.getDominantColor(colorproj)[0] * 2
+        print(avghue)
 
         # Return the color as text
         if (30 >= avghue or avghue >= 330): return "Red"
@@ -130,8 +116,27 @@ class Marker:
         elif (avghue <= 330): return "Pink"
         return "Undefined"
 
-    def getDominantColor(self):
-        pass
+    def getDominantColor(self, img):
+        reshape = img.reshape(
+            (img.shape[0] * img.shape[1], 3))
+
+        cluster = KMeans(n_clusters=2).fit(reshape)
+
+        # Get the number of different clusters, create histogram, and normalize
+        labels = np.arange(0, len(np.unique(cluster.labels_)) + 1)
+        (hist, _) = np.histogram(cluster.labels_, bins=labels)
+        hist = hist.astype("float")
+        hist /= hist.sum()
+
+        # Create frequency rect and iterate through each cluster's color and percentage
+        colors = sorted([(percent, color) for (percent, color) in zip(hist, cluster.cluster_centers_)])
+        
+        print (cv2.cvtColor(
+            np.uint8([[colors[1][1]]]), cv2.COLOR_BGR2HSV)[0, 0])
+
+        # Return average as HSV
+        return cv2.cvtColor(
+            np.uint8([[colors[1][1]]]), cv2.COLOR_BGR2HSV)[0, 0]
 
     def visualize_colors(self, cluster, centroids):
         # Get the number of different clusters, create histogram, and normalize

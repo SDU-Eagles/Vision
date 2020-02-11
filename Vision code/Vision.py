@@ -10,8 +10,8 @@ from os.path import dirname, abspath
 
 # Load the video
 #cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
-#cap = cv.VideoCapture(0)
-cap = cv.VideoCapture("rtsp://192.168.42.1/live")
+cap = cv.VideoCapture(0)
+#cap = cv.VideoCapture("rtsp://192.168.42.1/live")
 #cap = cv.VideoCapture(
 #    "rtspsrc location=rtsp://192.168.42.1/live ! appsink max-buffers=1 drop=true")
 
@@ -35,7 +35,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
     # Read until video is completed
     ret = True
     while (True):
-        cap.grab()
+        #cap.grab()
         ret, frame = cap.read() 
         if (not ret):
             break

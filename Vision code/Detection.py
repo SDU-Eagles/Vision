@@ -45,7 +45,7 @@ def Detect(im, ref, api):
                 # TODO Remove when scoring system is done
                 # Currently need to break
                 # So it only runs OCR on one marker once
-                break
+                #break
             
     # Return original image for debug purposes
     return ref

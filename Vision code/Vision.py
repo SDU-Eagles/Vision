@@ -27,7 +27,6 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
     # TODO This has some problems
     # Since it will still return non alphanumeric characters.
     
-    # TODO - doesn't '...' have to be "..."?
     # Added lowercase letters
     api.SetVariable('tessedit_char_whitelist',
                         'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
@@ -67,7 +66,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         # TODO This currently just returns the input image
         # While it should return the detection so OCR will be run in this file
         cv.imshow("Detection", t)
-
+     
         # Quit if 'q' is pressed
         ch = cv.waitKey(1)
         if ch & 0xFF == ord('q'):

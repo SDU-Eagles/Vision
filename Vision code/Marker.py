@@ -36,7 +36,7 @@ class Marker:
         self.approx = approx
         self.r = cv2.minAreaRect(approx)
 
-    def getScore(self):
+    def getScore(self, img):
         # Get min area rectangle
         r = cv2.minAreaRect(self.approx)
         (x,y), (width, height), angle = r
@@ -59,7 +59,14 @@ class Marker:
         self.score += squareness * 100
         self.score += solidity * 100
 
-        # Calculate dominant color
+        # Calculate the avrage color of the other border
+        # This is to remove markers having the white border with them
+        # Remove the alphanumeric from the marker
+        new = colorproj[ngproj < 100]
+        # Get average BGR values
+        avgrgb = np.uint8([[np.average(new, axis=0)]])
+        # Get hue
+        avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
 
         # Ignore smaller squares
         if (width < 25 or height < 25):
@@ -102,8 +109,16 @@ class Marker:
         return img
 
     def getColor(self, colorproj, ngproj):
-        avghue = self.getDominantColor(colorproj)[0] * 2
-        print(avghue)
+        # TODO Maybe mask will make it faster, dunno
+        # Remove the alphanumeric from the marker
+        new = colorproj[ngproj < 100]
+        # Get average BGR values
+        avgrgb = np.uint8([[np.average(new, axis=0)]])
+        # Get hue
+        avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
+
+        #avghue = self.getDominantColor(colorproj)[0] * 2
+        #print(avghue)
 
         # Return the color as text
         if (30 >= avghue or avghue >= 330): return "Red"

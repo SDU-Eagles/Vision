@@ -21,7 +21,7 @@ def Detect(im, ref, api):
             m = Marker(c,approx)
             
             # Calculate score
-            score = m.getScore()
+            score = m.getScore(ref)
 
             # Draw markers on image with score next to them
             #ref = m.drawMarker(ref, (0, 0, 255))
@@ -45,7 +45,7 @@ def Detect(im, ref, api):
                 # TODO Remove when scoring system is done
                 # Currently need to break
                 # So it only runs OCR on one marker once
-                #break
+                break
             
     # Return original image for debug purposes
     return ref

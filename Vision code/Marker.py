@@ -36,7 +36,7 @@ class Marker:
         self.approx = approx
         self.r = cv2.minAreaRect(approx)
 
-    def getScore(self, img, gray):
+    def getScore(self):
         # Get min area rectangle
         r = cv2.minAreaRect(self.approx)
         (x,y), (width, height), angle = r
@@ -86,7 +86,7 @@ class Marker:
         # Get average BGR values
         avgrgb = np.uint8([[np.average(new, axis=0)]])
         # Get hue
-        self.dhue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 1] * 2
+        self.dhue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
 
         r2 = ((x,y), (width * 0.6, height * 0.6), angle)
         mask = cv2.fillConvexPoly(mask, np.int0(cv2.boxPoints(r2)), 1)
@@ -136,16 +136,6 @@ class Marker:
         return img
 
     def getColor(self):
-        # TODO Maybe mask will make it faster, dunno
-        # Remove the alphanumeric from the marker
-        #new = colorproj[ngproj < 100]
-        # Get average BGR values
-        #avgrgb = np.uint8([[np.average(new, axis=0)]])
-        # Get hue
-        #avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
-
-        #avghue = self.getDominantColor(colorproj)[0] * 2
-        #print(avghue)
         avghue = self.dhue
 
         # Return the color as text

@@ -10,7 +10,7 @@ def OCR(im,api):
     im = cv2.bitwise_not(im)
 
     # Show OCR image
-    cv2.imshow("OCR", im)
+    #cv2.imshow("OCR", im)
 
     # The highest word confidence
     conf = 0

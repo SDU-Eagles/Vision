@@ -21,7 +21,7 @@ def Detect(gray, img, api):
             m = Marker(c,approx)
             
             # Calculate score
-            score = m.getScore(img, gray)
+            score = m.getScore()
 
             # Draw markers on image with score next to them
             #ref = m.drawMarker(ref, (0, 0, 255))
@@ -29,7 +29,7 @@ def Detect(gray, img, api):
             # Temporary till marker class implemented
             if score > 280:
                 score = m.getSecondaryScore(img, gray)
-                if score > 480:
+                if score > 500:
                     # Run OCR 
                     improj = m.getProjMarker(gray)
                     #refproj = m.getProjMarker(img)

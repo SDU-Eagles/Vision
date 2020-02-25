@@ -10,6 +10,9 @@ class Marker:
     msize = 40
     # Cutoff sides of projection
     sco = 4
+    # Range at which to sort out other markers (Center Too Close)
+    ctc = 5
+
 
     ######################
     # Internal Variables #
@@ -36,10 +39,24 @@ class Marker:
         self.approx = approx
         self.r = cv2.minAreaRect(approx)
 
+    def valid(self, markers):
+        # Get values from minAreaRect
+        (x, y), (width, height), angle = self.r
+
+        # Ignore smaller squares
+        if (width < 25 or height < 25): 
+            return False
+
+        for m in markers:
+            if (m.center[0] - self.ctc <= x <= m.center[0] + self.ctc): 
+                return False
+            if (m.center[1] - self.ctc <= y <= m.center[1] + self.ctc):
+                return False
+        return True
+
     def getScore(self):
         # Get min area rectangle
-        r = cv2.minAreaRect(self.approx)
-        (x,y), (width, height), angle = r
+        (x,y), (width, height), angle = self.r
         self.center = (int(x), int(y))
 
         # Calculate aspect ratio
@@ -59,10 +76,6 @@ class Marker:
         self.score += squareness * 100
         self.score += solidity * 100        
 
-        # Ignore smaller squares
-        if (width < 25 or height < 25):
-            self.score -= 1000
-
         #print(self.score, aspectRatio, solidity, squareness)
         return self.score
 
@@ -76,11 +89,10 @@ class Marker:
         # Get hue
         #avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
 
-        r = cv2.minAreaRect(self.approx)
-        (x, y), (width, height), angle = r
+        (x, y), (width, height), angle = self.r
 
         mask = np.uint8(np.ones(img.shape[:2]))
-        mask = cv2.fillConvexPoly(mask, np.int0(cv2.boxPoints(r)), 255)
+        mask = cv2.fillConvexPoly(mask, np.int0(cv2.boxPoints(self.r)), 255)
 
         new = img[mask > 100]
         # Get average BGR values
@@ -130,7 +142,7 @@ class Marker:
                     cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0,0,255))
 
         # Draw center
-        cv2.circle(img, self.center, 1, (255,0,0))
+        #cv2.circle(img, self.center, 1, (255,0,0))
 
         # Return image with marker
         return img

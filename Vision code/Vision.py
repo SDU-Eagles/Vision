@@ -10,7 +10,7 @@ from os.path import dirname, abspath
 
 # Load the video
 cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
-#cap = cv.VideoCapture(0)
+cap = cv.VideoCapture(0)
 #cap = cv.VideoCapture("rtsp://192.168.42.1/live")
 #cap = cv.VideoCapture(
 #    "rtspsrc location=rtsp://192.168.42.1/live ! appsink max-buffers=1 drop=true")

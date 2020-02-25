@@ -5,6 +5,8 @@ from OCR import OCR
 from Marker import Marker
 
 def Detect(gray, img, api):
+    markers = []
+
     # Blur image and detect edges
     edged = cv2.Canny(cv2.GaussianBlur(gray, (9, 9), 0), 50, 150)
     
@@ -20,6 +22,9 @@ def Detect(gray, img, api):
         if len(approx) >= 4 and len(approx) <= 6:
             m = Marker(c,approx)
             
+            if not m.valid(markers):
+                continue
+
             # Calculate score
             score = m.getScore()
 
@@ -27,27 +32,30 @@ def Detect(gray, img, api):
             #ref = m.drawMarker(ref, (0, 0, 255))
 
             # Temporary till marker class implemented
-            if score > 280:
-                score = m.getSecondaryScore(img, gray)
-                if score > 500:
-                    # Run OCR 
-                    improj = m.getProjMarker(gray)
-                    #refproj = m.getProjMarker(img)
-
-                    kernel = np.ones((2, 2), np.uint8)
-                    improj = cv2.dilate(improj, kernel, iterations=1)
-
-                    alphanum = OCR(improj, api)
-
-                    #cv2.drawContours(ref, c, -1, (0, 255, 0), 3)
-                    c = m.getColor() 
-
-                    img = m.drawMarker(img, c, alphanum)
-
-                    # TODO Remove when scoring system is done
-                    # Currently need to break
-                    # So it only runs OCR on one marker once
-                    break
+            if score < 280: 
+                continue
+            score = m.getSecondaryScore(img, gray)
             
+            if score < 500: 
+                continue
+            # Run OCR 
+            improj = m.getProjMarker(gray)
+            #refproj = m.getProjMarker(img)
+
+            kernel = np.ones((2, 2), np.uint8)
+            improj = cv2.dilate(improj, kernel, iterations=1)
+
+            alphanum = OCR(improj, api)
+
+            #cv2.drawContours(ref, c, -1, (0, 255, 0), 3) 
+
+            # Add to marker list
+            markers.append(m)
+
+    for m in markers:
+        c = m.getColor()
+        # Draw marker for debug
+        img = m.drawMarker(img, c, alphanum)
+
     # Return original image for debug purposes
     return img

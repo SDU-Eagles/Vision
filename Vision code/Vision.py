@@ -2,15 +2,15 @@ from GrassRemover import GrassRemover
 from Detection import Detect
 import cv2 as cv
 import numpy as np
-import time
+import datetime
 import datetime
 import tesserocr
 from tesserocr import PyTessBaseAPI, PSM
 from os.path import dirname, abspath
 
 # Load the video
-#cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
-cap = cv.VideoCapture(0)
+cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
+#cap = cv.VideoCapture(0)
 #cap = cv.VideoCapture("rtsp://192.168.42.1/live")
 #cap = cv.VideoCapture(
 #    "rtspsrc location=rtsp://192.168.42.1/live ! appsink max-buffers=1 drop=true")
@@ -21,11 +21,11 @@ if (cap.isOpened() == False):
 
 # Open Tesseract api
 # With Page Seperation Mode as Single Character
-# And english language
+# And englimg lgrayguage
 with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdata_fast-master', psm=PSM.SINGLE_CHAR, lang='eng') as api:
     # Only look for Alpha Numeric
     # TODO This has some problems
-    # Since it will still return non alphanumeric characters.
+    # Since it will still return non alphanumeric charactgrays.
     
     # Added lowercase letters
     api.SetVariable('tessedit_char_whitelist',
@@ -38,7 +38,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         ret, frame = cap.read() 
         if (not ret):
             break
-        # TODO Don't think this is actually needed
+        # TODO Don't think this is actually neimgd
         # But it works so will change later
         im = frame.copy()
 

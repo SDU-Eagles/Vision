@@ -9,7 +9,7 @@ class Marker:
     # Marker ocr size
     msize = 40
     # Cutoff sides of projection
-    sco = 5
+    sco = 4
 
     ######################
     # Internal Variables #
@@ -28,15 +28,15 @@ class Marker:
     # The projection square
     psqr = np.float32(
         [[0, 0], [msize, 0], [0, msize], [msize, msize]])
-    # Dominant color
-    dcolor = None
+    # Dominant hue
+    dhue = None
 
     def __init__(self, c, approx):
         self.c = c
         self.approx = approx
         self.r = cv2.minAreaRect(approx)
 
-    def getScore(self, img):
+    def getScore(self, img, gray):
         # Get min area rectangle
         r = cv2.minAreaRect(self.approx)
         (x,y), (width, height), angle = r
@@ -57,22 +57,49 @@ class Marker:
 
         # Use it to calculate score
         self.score += squareness * 100
-        self.score += solidity * 100
-
-        # Calculate the avrage color of the other border
-        # This is to remove markers having the white border with them
-        # Remove the alphanumeric from the marker
-        new = colorproj[ngproj < 100]
-        # Get average BGR values
-        avgrgb = np.uint8([[np.average(new, axis=0)]])
-        # Get hue
-        avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
+        self.score += solidity * 100        
 
         # Ignore smaller squares
         if (width < 25 or height < 25):
             self.score -= 1000
 
         #print(self.score, aspectRatio, solidity, squareness)
+        return self.score
+
+    def getSecondaryScore(self, img, gray):
+        # Calculate the avrage color of the other border
+        # This is to remove markers having the white border with them
+        # Remove the alphanumeric from the marker
+        #new = colorproj[ngproj < 100]
+        # Get average BGR values
+        #avgrgb = np.uint8([[np.average(new, axis=0)]])
+        # Get hue
+        #avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
+
+        r = cv2.minAreaRect(self.approx)
+        (x, y), (width, height), angle = r
+
+        mask = np.uint8(np.ones(img.shape[:2]))
+        mask = cv2.fillConvexPoly(mask, np.int0(cv2.boxPoints(r)), 255)
+
+        new = img[mask > 100]
+        # Get average BGR values
+        avgrgb = np.uint8([[np.average(new, axis=0)]])
+        # Get hue
+        self.dhue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 1] * 2
+
+        r2 = ((x,y), (width * 0.6, height * 0.6), angle)
+        mask = cv2.fillConvexPoly(mask, np.int0(cv2.boxPoints(r2)), 1)
+        #mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+        #new = cv2.bitwise_and(img,mask)
+        #cv2.imshow('Mask', new)
+        new = img[mask > 100]
+        # Get average BGR values
+        avgrgb = np.uint8([[np.average(new, axis=0)]])
+        # Get hue
+        avgsat = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 1] * 2
+        self.score += avgsat
+
         return self.score
 
     def getProjMarker(self, im):
@@ -108,17 +135,18 @@ class Marker:
         # Return image with marker
         return img
 
-    def getColor(self, colorproj, ngproj):
+    def getColor(self):
         # TODO Maybe mask will make it faster, dunno
         # Remove the alphanumeric from the marker
-        new = colorproj[ngproj < 100]
+        #new = colorproj[ngproj < 100]
         # Get average BGR values
-        avgrgb = np.uint8([[np.average(new, axis=0)]])
+        #avgrgb = np.uint8([[np.average(new, axis=0)]])
         # Get hue
-        avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
+        #avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
 
         #avghue = self.getDominantColor(colorproj)[0] * 2
         #print(avghue)
+        avghue = self.dhue
 
         # Return the color as text
         if (30 >= avghue or avghue >= 330): return "Red"
@@ -130,44 +158,3 @@ class Marker:
         elif (avghue <= 290): return "Purple"
         elif (avghue <= 330): return "Pink"
         return "Undefined"
-
-    def getDominantColor(self, img):
-        reshape = img.reshape(
-            (img.shape[0] * img.shape[1], 3))
-
-        cluster = KMeans(n_clusters=2).fit(reshape)
-
-        # Get the number of different clusters, create histogram, and normalize
-        labels = np.arange(0, len(np.unique(cluster.labels_)) + 1)
-        (hist, _) = np.histogram(cluster.labels_, bins=labels)
-        hist = hist.astype("float")
-        hist /= hist.sum()
-
-        # Create frequency rect and iterate through each cluster's color and percentage
-        colors = sorted([(percent, color) for (percent, color) in zip(hist, cluster.cluster_centers_)])
-        
-        print (cv2.cvtColor(
-            np.uint8([[colors[1][1]]]), cv2.COLOR_BGR2HSV)[0, 0])
-
-        # Return average as HSV
-        return cv2.cvtColor(
-            np.uint8([[colors[1][1]]]), cv2.COLOR_BGR2HSV)[0, 0]
-
-    def visualize_colors(self, cluster, centroids):
-        # Get the number of different clusters, create histogram, and normalize
-        labels = np.arange(0, len(np.unique(cluster.labels_)) + 1)
-        (hist, _) = np.histogram(cluster.labels_, bins=labels)
-        hist = hist.astype("float")
-        hist /= hist.sum()
-
-        # Create frequency rect and iterate through each cluster's color and percentage
-        rect = np.zeros((50, 300, 3), dtype=np.uint8)
-        colors = sorted([(percent, color) for (percent, color) in zip(hist, centroids)])
-        start = 0
-        for (percent, color) in colors:
-            print(color, "{:0.2f}%".format(percent * 100))
-            end = start + (percent * 300)
-            cv2.rectangle(rect, (int(start), 0), (int(end), 50),
-                      color.astype("uint8").tolist(), -1)
-            start = end
-        return rect

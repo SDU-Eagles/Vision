@@ -4,12 +4,19 @@ from PIL import Image
 import pytesseract
 import cv2
 import threading
+import numpy as np
 
+# Run OCR on 'img' with an initialized tesserocr 'api'
 def OCR(im,api):
+    # Dilate to remove noise and help the OCR algorithm
+    kernel = np.ones((2, 2), np.uint8)
+    im = cv2.dilate(im, kernel, iterations=1)
+
     # Invert colors for better result
+    # This makes sure the letter is black on white
     im = cv2.bitwise_not(im)
 
-    # Show OCR image
+    # Show OCR image for debug purposes
     #cv2.imshow("OCR", im)
 
     # The highest word confidence

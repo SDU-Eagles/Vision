@@ -3,31 +3,32 @@ import numpy as np
 from sklearn.cluster import KMeans
 
 class Marker:
-    ######################
-    # External Variables #
-    ######################
+    #############
+    # Variables #
+    #############
     # Marker ocr size
     msize = 40
+
     # Cutoff sides of projection
     sco = 4
-    # Range at which to sort out other markers (Center Too Close)
-    ctc = 5
 
 
-    ######################
-    # Internal Variables #
-    ######################
-    # Center of the marker
-    # Not in use
-    center = (0,0)
+    ####################
+    # System variables #
+    ####################
+
     # The registered score of the marker
     score = 0
+
     # The original contour defining the marker
     c = None
+
     # An approximate poly describing c
     approx = None
+
     # Min area rectangle of the contour
     r = None
+
     # The projection square
     psqr = np.float32(
         [[0, 0], [msize, 0], [0, msize], [msize, msize]])
@@ -39,6 +40,9 @@ class Marker:
         self.approx = approx
         self.r = cv2.minAreaRect(approx)
 
+    # Makes sure the marker fulfills some minimum requirements like
+    #  - Marker has not been detected before
+    #  - Marker is not too small
     def valid(self, markers):
         # Get values from minAreaRect
         (x, y), (width, height), angle = self.r
@@ -47,73 +51,84 @@ class Marker:
         if (width < 25 or height < 25): 
             return False
 
+        # Make sure the marker is not inside an already existing marker
         for m in markers:
-            if (m.center[0] - self.ctc <= x <= m.center[0] + self.ctc): 
+            (mx, my), (mwidth, mheight), _ = m.r
+            if (mx - mwidth/2 <= x <= mx + mwidth/2):
                 return False
-            if (m.center[1] - self.ctc <= y <= m.center[1] + self.ctc):
+            if (my - mheight/2 <= y <= my + mheight/2):
                 return False
+
+        # If all tests are passed:
         return True
 
+    # Calculates the first score of the marker using:
+    #  - Aspect ration
+    #  - Squareness
+    #  - Solidity
     def getScore(self):
-        # Get min area rectangle
+        # Get the values from minarearect
         (x,y), (width, height), angle = self.r
-        self.center = (int(x), int(y))
 
-        # Calculate aspect ratio
+        # Calculate score from aspect ratio
         aspectRatio = min(width, height) / max(width, height)
-        # Use it to calculate score
         self.score += aspectRatio * 100
 
-        # Compute the solidity of the original contour
-        # TODO Change this to use convex hull and min area rect
+        # Calculate the area of the original contour
         area = cv2.contourArea(self.c)
+        
+        # Compute the solidity of the original contour
+        # And add it to the score
         hullArea = cv2.contourArea(cv2.convexHull(self.c))
         solidity = area / float(hullArea)
+        self.score += solidity * 100
+
+        # Calculate the squareness of the contour
+        # And add it to the score
         rarea = float(width * height)
         squareness = min(area,rarea) / max(area,rarea)
-
-        # Use it to calculate score
         self.score += squareness * 100
-        self.score += solidity * 100        
 
-        #print(self.score, aspectRatio, solidity, squareness)
         return self.score
 
+    # Calculate a secondary and more time intensive score 
+    # This is currently only removing markers which also has the white border
     def getSecondaryScore(self, img, gray):
-        # Calculate the avrage color of the other border
-        # This is to remove markers having the white border with them
-        # Remove the alphanumeric from the marker
-        #new = colorproj[ngproj < 100]
-        # Get average BGR values
-        #avgrgb = np.uint8([[np.average(new, axis=0)]])
-        # Get hue
-        #avghue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
-
+        # Get values from rect
         (x, y), (width, height), angle = self.r
 
+        # Create a mask, which only contains the whole marker
         mask = np.uint8(np.ones(img.shape[:2]))
         mask = cv2.fillConvexPoly(mask, np.int0(cv2.boxPoints(self.r)), 255)
 
+        # As a biproduct of this, it is quicker to calculate the average color now, than doing it later
+
+        # Create a list of colors from the image
+        # Which fit into the mask
         new = img[mask > 100]
-        # Get average BGR values
+        # Get average BGR value
         avgrgb = np.uint8([[np.average(new, axis=0)]])
-        # Get hue
+        # Get average hue
         self.dhue = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 0] * 2
 
+        # Create a rectangle, which will contain a marker, if the white border is present
         r2 = ((x,y), (width * 0.6, height * 0.6), angle)
+        # And mask it out
         mask = cv2.fillConvexPoly(mask, np.int0(cv2.boxPoints(r2)), 1)
-        #mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
-        #new = cv2.bitwise_and(img,mask)
-        #cv2.imshow('Mask', new)
+        
+        # Caculate the average color of the border, same as before
         new = img[mask > 100]
         # Get average BGR values
         avgrgb = np.uint8([[np.average(new, axis=0)]])
-        # Get hue
+
+        # However use saturation instead
+        # Lower saturation = more chance of white border = lower score
         avgsat = cv2.cvtColor(avgrgb, cv2.COLOR_BGR2HSV)[0, 0, 1] * 2
         self.score += avgsat
 
         return self.score
 
+    # Project the marker into a square on im
     def getProjMarker(self, im):
         # Get box points of min area rect
         k = cv2.boxPoints(self.r)
@@ -127,7 +142,6 @@ class Marker:
         dst = dst[self.sco:self.msize - self.sco,
                   self.sco:self.msize - self.sco]
 
-        # Invert colors for better OCR result
         return dst
 
     # Draw the marker on img, with the score next to it
@@ -137,16 +151,17 @@ class Marker:
         box = np.int0(box)
         cv2.drawContours(img, [box], 0, (255,0,0), 2)
 
-        # Draw score
-        cv2.putText(img, str(int(self.score)) + " " + c + " " + alphanum, self.center,
-                    cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0,0,255))
+        # Get center of marker
+        (x, y), _, _ = self.r
 
-        # Draw center
-        #cv2.circle(img, self.center, 1, (255,0,0))
+        # Draw score in the center
+        cv2.putText(img, str(int(self.score)) + " " + c + " " + alphanum, (int(x), int(y)),
+                    cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0,0,255))
 
         # Return image with marker
         return img
 
+    # Turn dhue into text
     def getColor(self):
         avghue = self.dhue
 

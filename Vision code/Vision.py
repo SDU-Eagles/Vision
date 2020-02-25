@@ -7,11 +7,19 @@ import datetime
 import tesserocr
 from tesserocr import PyTessBaseAPI, PSM
 from os.path import dirname, abspath
-
-# Load the video
+#################
+# Video loading #
+#################
+# Using file
 cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
-cap = cv.VideoCapture(0)
+
+# Using webcam
+#cap = cv.VideoCapture(0)
+
+# Using RTSP
 #cap = cv.VideoCapture("rtsp://192.168.42.1/live")
+
+# Using RTSP that doesn't work
 #cap = cv.VideoCapture(
 #    "rtspsrc location=rtsp://192.168.42.1/live ! appsink max-buffers=1 drop=true")
 
@@ -19,34 +27,38 @@ cap = cv.VideoCapture(0)
 if (cap.isOpened() == False):
     print("Error opening video stream or file")
 
+#############
+# Main code #
+#############
+
 # Open Tesseract api
 # With Page Seperation Mode as Single Character
 # And englimg lgrayguage
 with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdata_fast-master', psm=PSM.SINGLE_CHAR, lang='eng') as api:
-    # Only look for Alpha Numeric
-    # TODO This has some problems
-    # Since it will still return non alphanumeric charactgrays.
-    
-    # Added lowercase letters
+    # Only look for alpha numerics
     api.SetVariable('tessedit_char_whitelist',
                         'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
 
     # Read until video is completed
     ret = True
     while (True):
+        # Drop frames, if needed
+        # This shouldn't be necessarry if the code is fast enough
         #cap.grab()
+
+        # Read the frame
         ret, frame = cap.read() 
         if (not ret):
             break
-        # TODO Don't think this is actually neimgd
-        # But it works so will change later
+        # TODO This is pretty much just a waste of time, but it works
+        # Copy the frame
         im = frame.copy()
 
         # Remove grass and grayscale image
         NoGrassGray = GrassRemover(frame)
 
-        # Calculate the time it takes to run detection
-        # And currently also OCR
+        # Run detection
+        # And measure the time it takes
         a = datetime.datetime.now()
         t = Detect(NoGrassGray, frame, api)
         b = datetime.datetime.now()
@@ -57,18 +69,19 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         ### DEBUG ###
         #############
         # Show original image
-        #cv.namedWindow("Original", cv.WINDOW_NORMAL)
         #cv.imshow("Original", im)
+
         # Show image without grass
-        #cv.namedWindow("No Grass Image", cv.WINDOW_NORMAL)
         cv.imshow("No Grass Image", NoGrassGray)
+
         # Show the Detect result
-        # TODO This currently just returns the input image
-        # While it should return the detection so OCR will be run in this file
         cv.imshow("Detection", t)
      
-        # Quit if 'q' is pressed
+        # Set this to:
+        #  1: live video
+        #  0: individual frames
         ch = cv.waitKey(1)
+        # Quit if 'q' is pressed
         if ch & 0xFF == ord('q'):
             break
         

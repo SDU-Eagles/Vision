@@ -151,12 +151,13 @@ class Marker:
         avghue = self.dhue
 
         # Return the color as text
-        if (30 >= avghue or avghue >= 330): return "Red"
-        elif (avghue <= 30): return "Orange"
+        if (15 >= avghue or avghue >= 340): return "Red"
+        elif (avghue <= 35): return "Orange"
         elif (avghue <= 70): return "Yellow"
-        elif (avghue <= 140): return "Yellow"
-        elif (avghue <= 200): return "Light blue"
+        elif (avghue <= 140): return "Green"
+        elif (avghue <= 200): return "Cyan"
         elif (avghue <= 255): return "Blue"
         elif (avghue <= 290): return "Purple"
-        elif (avghue <= 330): return "Pink"
+        elif (avghue <= 315): return "Magenta"
+        elif (avghue <= 340): return "Rose"
         return "Undefined"

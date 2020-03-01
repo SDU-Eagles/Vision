@@ -11,10 +11,10 @@ from os.path import dirname, abspath
 # Video loading #
 #################
 # Using file
-cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (2).mp4')
+#cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
 
 # Using webcam
-#cap = cv.VideoCapture(0)
+cap = cv.VideoCapture(0)
 
 # Using RTSP
 #cap = cv.VideoCapture("rtsp://192.168.42.1/live")

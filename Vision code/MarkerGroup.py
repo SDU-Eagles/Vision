@@ -11,17 +11,22 @@ class MarkerGroup:
     # Alpha numerical of marker
     aphaNum = ''
 
+    # Color in text
+    color = ''
+
     # Time in frames, since the markergroup was activated
     lastActivation = 0
 
     def __init__(self, m, alphaNum):
         self.markerList = [ m ]   
         self.alphaNum = alphaNum 
+        self.color = m.getColor()
 
     def addMarker(self, m, alphaNum):
         # TODO Add red support
         #print(m.dhue, alphaNum)
-        if self.inRange(m.dhue, self.markerList[0].dhue, self.ctol) and self.alphaNum == alphaNum:
+        #if self.inRange(m.dhue, self.markerList[0].dhue, self.ctol) and self.alphaNum == alphaNum:
+        if self.color == m.getColor() and self.alphaNum == alphaNum:
             self.markerList.append(m)
             self.lastActivation = 0
             return True

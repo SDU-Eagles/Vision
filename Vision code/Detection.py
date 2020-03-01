@@ -59,7 +59,7 @@ def Detect(gray, img, api, markerGroups):
             if (len(mg.markerList) <= 1):
                 markerGroups.remove(mg)
                 continue
-            print(mg.markerList[0].getColor(), mg.alphaNum)
+            print(mg.color, mg.alphaNum)
             markerGroups.remove(mg)
 
     # Go through all approved markers

@@ -66,7 +66,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         t = Detect(NoGrassGray, frame, api, markerGroups)
         b = datetime.datetime.now()
         c = b - a
-        #print("time", int(c.total_seconds() * 1000))
+        print("time", int(c.total_seconds() * 1000))
 
         #############
         ### DEBUG ###

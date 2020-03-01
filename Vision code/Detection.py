@@ -3,8 +3,9 @@ import numpy as np
 import pytesseract
 from OCR import OCR
 from Marker import Marker
+from MarkerGroup import MarkerGroup
 
-def Detect(gray, img, api):
+def Detect(gray, img, api, markerGroups):
     # List of detected and approved markers
     markers = []
 
@@ -43,8 +44,23 @@ def Detect(gray, img, api):
             # TODO Ignore markers with zero confidence or length
             alphanum = OCR(m.getProjMarker(gray), api)
 
+            b = True
+            for mg in markerGroups:
+                if mg.addMarker(m, alphanum):
+                    b = False
+            if b:
+                markerGroups.append(MarkerGroup(m, alphanum))
+
             # Add marker to the list of approved markers
             markers.append(m)
+
+    for mg in markerGroups:
+        if not mg.tick():
+            if (len(mg.markerList) <= 1):
+                markerGroups.remove(mg)
+                continue
+            print(mg.markerList[0].getColor(), mg.alphaNum)
+            markerGroups.remove(mg)
 
     # Go through all approved markers
     for m in markers:
@@ -52,6 +68,8 @@ def Detect(gray, img, api):
         c = m.getColor()
         # And draw the marker on the image for debugging
         img = m.drawMarker(img, c, alphanum)
+
+    #print(len(markerGroups))
 
     # Return original image for debug purposes
     return img

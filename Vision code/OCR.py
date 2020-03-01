@@ -44,5 +44,5 @@ def OCR(im,api):
         im = cv2.rotate(im, cv2.ROTATE_90_CLOCKWISE)
         
     # Print the highscore, with the confidence
-    print("Character: {0} : Confidence {1}".format(char,conf))
+    #print("Character: {0} : Confidence {1}".format(char,conf))
     return char

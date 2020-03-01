@@ -35,6 +35,9 @@ class Marker:
     # Dominant hue
     dhue = None
 
+    # Alpha numerical
+    alphaNum = ''
+
     def __init__(self, c, approx):
         self.c = c
         self.approx = approx
@@ -176,3 +179,4 @@ class Marker:
         elif (avghue <= 315): return "Magenta"
         elif (avghue <= 340): return "Rose"
         return "Undefined"
+        

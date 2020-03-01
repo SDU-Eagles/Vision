@@ -11,7 +11,7 @@ from os.path import dirname, abspath
 # Video loading #
 #################
 # Using file
-cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
+cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (2).mp4')
 
 # Using webcam
 #cap = cv.VideoCapture(0)
@@ -39,6 +39,9 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
     api.SetVariable('tessedit_char_whitelist',
                         'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
 
+    # MarkerGroups
+    markerGroups = []
+
     # Read until video is completed
     ret = True
     while (True):
@@ -60,10 +63,10 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         # Run detection
         # And measure the time it takes
         a = datetime.datetime.now()
-        t = Detect(NoGrassGray, frame, api)
+        t = Detect(NoGrassGray, frame, api, markerGroups)
         b = datetime.datetime.now()
         c = b - a
-        print("time", int(c.total_seconds() * 1000))
+        #print("time", int(c.total_seconds() * 1000))
 
         #############
         ### DEBUG ###

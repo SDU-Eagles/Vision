@@ -56,7 +56,7 @@ def Detect(gray, img, api, markerGroups):
 
     for mg in markerGroups:
         if not mg.tick():
-            if (len(mg.markerList) <= 1):
+            if (len(mg.markerList) <= 3):
                 markerGroups.remove(mg)
                 continue
             print(mg.color, mg.alphaNum)

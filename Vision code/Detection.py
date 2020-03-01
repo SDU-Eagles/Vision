@@ -40,6 +40,7 @@ def Detect(gray, img, api):
                 continue
 
             # Run OCR on a sqaure projection of the marker
+            # TODO Ignore markers with zero confidence or length
             alphanum = OCR(m.getProjMarker(gray), api)
 
             # Add marker to the list of approved markers

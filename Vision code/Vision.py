@@ -11,7 +11,7 @@ from os.path import dirname, abspath
 # Video loading #
 #################
 # Using file
-#cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
+cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
 
 # Using webcam
 cap = cv.VideoCapture(0)
@@ -48,7 +48,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         # Drop frames, if needed
         # This shouldn't be necessarry if the code is fast enough
         #cap.grab()
-
+        a = datetime.datetime.now()
         # Read the frame
         ret, frame = cap.read() 
         if (not ret):
@@ -62,11 +62,8 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
 
         # Run detection
         # And measure the time it takes
-        a = datetime.datetime.now()
+        
         t = Detect(NoGrassGray, frame, api, markerGroups)
-        b = datetime.datetime.now()
-        c = b - a
-        print("time", int(c.total_seconds() * 1000))
 
         #############
         ### DEBUG ###
@@ -79,6 +76,10 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
 
         # Show the Detect result
         cv.imshow("Detection", t)
+
+        b = datetime.datetime.now()
+        c = b - a
+        #print("time", int(c.total_seconds() * 1000))
      
         # Set this to:
         #  1: live video

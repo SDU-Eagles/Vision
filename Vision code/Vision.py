@@ -76,10 +76,10 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         #cv.imshow("Original", im)
 
         # Show image without grass
-        cv.imshow("No Grass Image", NoGrassGray)
+        #cv.imshow("No Grass Image", NoGrassGray)
 
         # Show the Detect result
-        cv.imshow("Detection", t)
+        #cv.imshow("Detection", t)
 
         b = datetime.datetime.now()
         c = b - a

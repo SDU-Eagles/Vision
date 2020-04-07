@@ -41,6 +41,10 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
 
     # MarkerGroups
     markerGroups = []
+    
+    # Avg calc
+    avgi = 0
+    avgsum = 0
 
     # Read until video is completed
     ret = True
@@ -79,6 +83,8 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
 
         b = datetime.datetime.now()
         c = b - a
+        avgsum += c.total_seconds() * 1000
+        avgi += 1
         #print("time", int(c.total_seconds() * 1000))
      
         # Set this to:
@@ -88,6 +94,8 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         # Quit if 'q' is pressed
         if ch & 0xFF == ord('q'):
             break
-        
+    
+    print (avgsum/avgi)
+
     # When everything done, release the video capture object
     cap.release()

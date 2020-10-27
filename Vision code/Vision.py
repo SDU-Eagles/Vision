@@ -3,7 +3,6 @@ from Detection import Detect
 import cv2 as cv
 import numpy as np
 import datetime
-import datetime
 import tesserocr
 from tesserocr import PyTessBaseAPI, PSM
 from os.path import dirname, abspath
@@ -11,13 +10,14 @@ from os.path import dirname, abspath
 # Video loading #
 #################
 # Using file
-#cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
+cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
 
 # Using webcam
 #cap = cv.VideoCapture(0)
 
+
 # Using RTSP
-cap = cv.VideoCapture("rtsp://192.168.42.1/live")
+#cap = cv.VideoCapture("rtsp://192.168.42.1/live")
 
 # Using RTSP that doesn't work
 #cap = cv.VideoCapture(
@@ -73,13 +73,13 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         ### DEBUG ###
         #############
         # Show original image
-        #cv.imshow("Original", im)
+        # cv.imshow("Original", im)
 
         # Show image without grass
         #cv.imshow("No Grass Image", NoGrassGray)
 
         # Show the Detect result
-        # cv.imshow("Detection", t)
+        cv.imshow("Detection", t)
 
         b = datetime.datetime.now()
         c = b - a

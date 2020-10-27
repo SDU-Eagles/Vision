@@ -54,6 +54,8 @@ def Detect(gray, img, api, markerGroups):
             # Add marker to the list of approved markers
             markers.append(m)
 
+            #TODO Log marker here with datetime
+
     for mg in markerGroups:
         if not mg.tick():
             if (len(mg.markerList) <= 3):

@@ -149,6 +149,7 @@ class Marker:
 
     # Draw the marker on img, with the score next to it
     def drawMarker(self, img, c, alphanum):
+        # Log detection to a log.csv file
         Logging(alphanum, c, self.score)
         # Draw rectangle around marker
         box = cv2.boxPoints(self.r) 

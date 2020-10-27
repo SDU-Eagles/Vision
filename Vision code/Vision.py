@@ -10,7 +10,7 @@ from os.path import dirname, abspath
 # Video loading #
 #################
 # Using file
-cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/New (1).mp4')
+cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSample/v2.mp4')
 
 # Using webcam
 #cap = cv.VideoCapture(0)
@@ -72,7 +72,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         ### DEBUG ###
         #############
         # Show original image
-        #cv.imshow("Original", im)
+        # cv.imshow("Original", im)
 
         # Show image without grass
         #cv.imshow("No Grass Image", NoGrassGray)

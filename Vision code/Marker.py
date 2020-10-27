@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from Logging import Logging
 
 class Marker:
     #############
@@ -148,6 +149,7 @@ class Marker:
 
     # Draw the marker on img, with the score next to it
     def drawMarker(self, img, c, alphanum):
+        Logging(alphanum, c, self.score)
         # Draw rectangle around marker
         box = cv2.boxPoints(self.r) 
         box = np.int0(box)

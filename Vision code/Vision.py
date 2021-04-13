@@ -15,8 +15,9 @@ cap = cv.VideoCapture(dirname(dirname(dirname(abspath(__file__)))) + '/VisionSam
 # Using webcam
 #cap = cv.VideoCapture(0)
 
-# Using RTSPB
-# cap = cv.VideoCapture("rtsp://192.168.42.1/live")
+
+# Using RTSP
+#cap = cv.VideoCapture("rtsp://192.168.42.1/live")
 
 # Using RTSP that doesn't work
 #cap = cv.VideoCapture(
@@ -93,7 +94,7 @@ with PyTessBaseAPI(path=dirname(dirname(dirname(abspath(__file__)))) + '/tessdat
         # Quit if 'q' is pressed
         if ch & 0xFF == ord('q'):
             break
-    
+
     print (avgsum/avgi)
 
     # When everything done, release the video capture object

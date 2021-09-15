@@ -1,0 +1,4 @@
+
+Install OpenCv for Python in Linux:
+
+sudo apt install python3-opencv

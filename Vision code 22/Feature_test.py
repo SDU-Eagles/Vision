@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import cv2
 
 area        = [0.36, 0.36, 0.64, 0.64, 0.68]
 perimeter   = [0.36, 0.20, 0.40, 0.32, 0.33]

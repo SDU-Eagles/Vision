@@ -1,6 +1,0 @@
-Eagles Vision Diagram Components
-
-
-Detect marker
-
-Identify marker

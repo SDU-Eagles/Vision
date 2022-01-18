@@ -27,29 +27,34 @@ def inLabDist(img, colour, maxDist):
     return mask[:,:,1]
 
 
-def crop(bit_img):
-    top = []
-    left = []
-    right = []
-    bottom = []
+# Can be integrated in the inLabDist function, to reduce number og loops through image
+def crop(img, bit_img):
+    top = -1
+    left = -1
+    right = -1
+    bottom = -1
 
-    def get_top(): 
-        for i, row in enumerate(bit_img):
-            for j, pixel in enumerate(row):
-                if (pixel != 0):
-                    return [i,j]
 
-    return get_top()
+    for i, row in enumerate(bit_img):
+        for j, pixel in enumerate(row):
+            if (pixel != 0):
+                if (i < top or top == -1): top = i
+                if (i > bottom or bottom == -1): bottom = i
+                if (j < left or left == -1): left = j
+                if (j > right or right == -1): right = j
+
+    print(top, bottom, left, right)
+
+    return img[top:bottom, left:right]
 
 
 mask = inLabDist(img, [0, 0, 255], 80)
 result = cv2.bitwise_and(img, img, mask = mask)
+result_crop = crop(result, mask)
 
-print(crop(mask))
 # kernel = np.ones((4, 4), np.uint8)
 # result = cv2.erode(result, kernel) 
 # result = cv2.dilate(result, kernel)
 
-
-cv2.imshow('image', result)
+cv2.imshow('image', result_crop)
 cv2.waitKey(0)

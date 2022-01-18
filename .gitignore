@@ -3,4 +3,4 @@
 */__pycahce__/
 opencv/
 opencv_contrib/
-.vscode/**
+.vscode/*

@@ -4,3 +4,4 @@
 opencv/
 opencv_contrib/
 .vscode/*
+**/build/*

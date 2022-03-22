@@ -20,8 +20,8 @@ def detect_marker_contours(img):
     img = cv2.GaussianBlur(img, (3, 3), 0)
     
     pixels = np.reshape(img, (-1, 3))
-    # segmented_image = mahalanobis(pixels, cov_inv, avg)
-    segmented_image = cv2.inRange(img, (0, 0, 245), (10, 10, 256))  # Full marker image
+    segmented_image = mahalanobis(pixels, cov_inv, avg)
+    # segmented_image = cv2.inRange(img, (0, 0, 245), (10, 10, 256))  # Full marker image
 
 
     # Morphological filtering the image
@@ -33,11 +33,11 @@ def detect_marker_contours(img):
     return contours
 
 
-def group_contours(contours):   # TODO: Not done
+def group_contours(contours):   # TODO: Not done. Hierarchical Clustering? K-means? Gaussian Mixture Model?
     pass
 
 
-def identify_marker(marker):
+def identify_marker(marker):    # TODO: Not done. Perimeter is a horrible measure for discrete edges.
     area = 0
     perimeter = 0
 
@@ -45,12 +45,16 @@ def identify_marker(marker):
         area += cv2.contourArea(contour)
         perimeter += cv2.arcLength(contour, True)
 
-    ratio = area / perimeter
+    if (area != 0 or perimeter != 0):
+        ratio = area / perimeter
 
-    idx = (np.abs(marker_identifiers - ratio)).argmin()
-    markerID = marker_identifiers[idx]
+        idx = (np.abs(marker_identifiers - ratio)).argmin()
+        markerID = idx + 1
+        
+        return markerID
     
-    return markerID
+    else:
+        return -1
 
 
 def locate_marker(marker):  # TODO: Not done
@@ -77,8 +81,8 @@ def mahalanobis(pixels, cov_inv, avg):
 if __name__ == "__main__":
 
     # Load image
-    path = "Markers/Marker5.png"
-    # path = "Sample_images/5.jpg"
+    # path = "Markers/Marker1.png"
+    path = "Sample_images/5.jpg"
     img = cv2.imread(path)
 
 
@@ -91,6 +95,10 @@ if __name__ == "__main__":
     #     markerLOC = locate_marker(marker)
 
     #     print(markerID, markerLOC)
+
+    markerID = identify_marker(marker_contours)
+    print(markerID)
+
 
 
 

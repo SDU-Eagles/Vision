@@ -16,6 +16,6 @@ img = cv2.imread(path)
 
 marker_contours = detect_marker_contours(img, debug = False, img_is_groundtruth = False)
 
-markerID = identify_marker(marker_contours)
-print(markerID)
-
+for marker in marker_contours:
+    markerID = identify_marker(marker)
+    print(markerID)

@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 
+import scipy.cluster.hierarchy as shc
+from matplotlib import pyplot as plt
+
 
 # Inversed covariance matrix and average from "colour_variance/get_threshold.py"
 # Used to determine Mahalanobis distance for colour segmentation
@@ -39,7 +42,25 @@ def mahalanobis(img, pixels, cov_inv, avg):
 
 def group_contours(contours):   # TODO: Not done. Hierarchical Clustering? K-means? Gaussian Mixture Model?
     # Output: Array of markers, consisting of multiple contours
-    pass
+    
+    contour_moments = []
+
+    for contour in contours:
+        M = cv2.moments(contour)
+        
+        if M["m00"] != 0:
+            cx = int(M['m10'] / M['m00'])
+            cy = int(M['m01'] / M['m00'])
+
+            contour_moments.append([cx, cy])
+
+
+    dend = shc.dendrogram(shc.linkage(contour_moments, method='single'))
+    # plt.show()
+
+
+
+    return np.array([contours], dtype=object)
 
 
 def detect_marker_contours(img, debug = False, img_is_groundtruth = False):
@@ -67,11 +88,17 @@ def detect_marker_contours(img, debug = False, img_is_groundtruth = False):
         approx_contours.append(hull)
 
 
+    grouped_markers = group_contours(approx_contours)
+
+
     if (debug):
+        if (len(approx_contours) == 0):
+            print("No markers found!")
+
         show_image(img, approx_contours)
 
 
-    return approx_contours
+    return grouped_markers
 
 
 
@@ -80,7 +107,7 @@ if __name__ == "__main__":
 
     # Load image
     # path = "Markers/Marker5.png"
-    path = "Sample_images/5.jpg"
+    path = "Sample_images/9.jpg"
     img = cv2.imread(path)
 
 

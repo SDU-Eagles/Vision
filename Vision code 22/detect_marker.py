@@ -1,4 +1,3 @@
-from dis import show_code
 import cv2
 import numpy as np
 
@@ -11,20 +10,48 @@ cov_inv = np.array([[0.32621069, -0.3328852, 0.01422344],
 
 avg = np.array([100.40176446, 92.74843263, 209.55799693])
 
-# Area / Perimiter
-# marker_identifiers = np.array([50.09054353854687, 90.5906442250778, 80.15582483879922, 102.25, 202.03946401399423])
-# Number of contours
-marker_identifiers = np.array([9, 1, 4, 4, 3])
 
 
+def show_image(img, contours):
 
-def detect_marker_contours(img):
+    cv2.drawContours(image=img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=5, lineType=cv2.LINE_AA)
+    height, width, channels = img.shape 
+    dim = (600, round(600 * height/width))
+    img = cv2.resize(img, dim, interpolation=cv2.INTER_LINEAR)
+
+    cv2.imshow('contours', img)
+    cv2.waitKey(0)
+
+
+def mahalanobis(img, pixels, cov_inv, avg):
+    # Mahalanobis based segmentation
+    shape = pixels.shape
+    diff = pixels - np.repeat([avg], shape[0], axis=0)
+
+    mahalanobis_dist = np.sum(diff * (diff @ cov_inv), axis=1)
+    mahalanobis_distance_image = np.reshape(mahalanobis_dist, (img.shape[0], img.shape[1]))
+
+    _, mahalanobis_segmented = cv2.threshold(mahalanobis_distance_image, 40, 255, cv2.THRESH_BINARY_INV)
+    mahalanobis_segmented = mahalanobis_segmented.astype(np.uint8)
+
+    return mahalanobis_segmented
+
+
+def group_contours(contours):   # TODO: Not done. Hierarchical Clustering? K-means? Gaussian Mixture Model?
+    # Output: Array of markers, consisting of multiple contours
+    pass
+
+
+def detect_marker_contours(img, debug = False, img_is_groundtruth = False):
 
     img = cv2.GaussianBlur(img, (3, 3), 0)
     
     pixels = np.reshape(img, (-1, 3))
-    segmented_image = mahalanobis(pixels, cov_inv, avg)
-    # segmented_image = cv2.inRange(img, (0, 0, 245), (10, 10, 256))  # Full marker image (completely red)
+
+    if (img_is_groundtruth):
+        segmented_image = cv2.inRange(img, (0, 0, 245), (10, 10, 256))  # Full marker image (completely red)
+    else:
+        segmented_image = mahalanobis(img, pixels, cov_inv, avg)
 
 
     # Morphological filtering the image
@@ -39,71 +66,14 @@ def detect_marker_contours(img):
         hull = cv2.convexHull(contour)
         approx_contours.append(hull)
 
+
+    if (debug):
+        show_image(img, approx_contours)
+
+
     return approx_contours
 
 
-def group_contours(contours):   # TODO: Not done. Hierarchical Clustering? K-means? Gaussian Mixture Model?
-    # Output: Array of markers, consisting of multiple contours
-    pass
-
-
-def identify_marker(marker):    # TODO: Not done. Perimeter is a horrible measure for discrete edges.
-    # area = 0
-    # perimeter = 0
-
-    # for contour in marker:
-    #     area += cv2.contourArea(contour)
-    #     perimeter += cv2.arcLength(contour, True)
-
-    # if (area != 0 or perimeter != 0):
-    #     ratio = area / perimeter
-
-    #     idx = (np.abs(marker_identifiers - ratio)).argmin()
-    #     markerID = idx + 1
-        
-    #     return markerID
-    
-    # else:
-    #     return -1
-
-
-    if (len(marker) != 0):        
-        idx = (np.abs(marker_identifiers - len(marker))).argmin()
-        markerID = idx + 1
-        return markerID
-    else:
-        return -1
-
-
-def locate_marker(marker):  # TODO: Not done
-    markerLOC = [0, 0]
-
-    return markerLOC
-
-
-def mahalanobis(pixels, cov_inv, avg):
-    # Mahalanobis based segmentation
-    shape = pixels.shape
-    diff = pixels - np.repeat([avg], shape[0], axis=0)
-
-    mahalanobis_dist = np.sum(diff * (diff @ cov_inv), axis=1)
-    mahalanobis_distance_image = np.reshape(mahalanobis_dist, (img.shape[0], img.shape[1]))
-
-    _, mahalanobis_segmented = cv2.threshold(mahalanobis_distance_image, 40, 255, cv2.THRESH_BINARY_INV)
-    mahalanobis_segmented = mahalanobis_segmented.astype(np.uint8)
-
-    return mahalanobis_segmented
-
-
-def show_image(img, contours):
-
-    cv2.drawContours(image=img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=5, lineType=cv2.LINE_AA)
-    height, width, channels = img.shape 
-    dim = (600, round(600 * height/width))
-    img = cv2.resize(img, dim, interpolation=cv2.INTER_LINEAR)
-
-    cv2.imshow('contours', img)
-    cv2.waitKey(0)
 
 
 if __name__ == "__main__":
@@ -114,18 +84,4 @@ if __name__ == "__main__":
     img = cv2.imread(path)
 
 
-    marker_contours = detect_marker_contours(img)
-    # grouped_markers = group_contours(marker_contours)
-
-
-    # for marker in grouped_markers:
-    #     markerID,  = identify_marker(marker)
-    #     markerLOC = locate_marker(marker)
-
-    #     print(markerID, markerLOC)
-
-    markerID = identify_marker(marker_contours)
-    print(markerID)
-
-
-    show_image(img, marker_contours)
+    marker_contours = detect_marker_contours(img, debug = True, img_is_groundtruth = False)

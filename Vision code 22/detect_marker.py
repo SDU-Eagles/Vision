@@ -12,7 +12,9 @@ cov_inv = np.array([[0.32621069, -0.3328852, 0.01422344],
 avg = np.array([100.40176446, 92.74843263, 209.55799693])
 
 # Area / Perimiter
-marker_identifiers = np.array([50.09054353854687, 90.5906442250778, 80.15582483879922, 102.25, 202.03946401399423])
+# marker_identifiers = np.array([50.09054353854687, 90.5906442250778, 80.15582483879922, 102.25, 202.03946401399423])
+# Number of contours
+marker_identifiers = np.array([9, 1, 4, 4, 3])
 
 
 
@@ -22,7 +24,7 @@ def detect_marker_contours(img):
     
     pixels = np.reshape(img, (-1, 3))
     segmented_image = mahalanobis(pixels, cov_inv, avg)
-    # segmented_image = cv2.inRange(img, (0, 0, 245), (10, 10, 256))  # Full marker image
+    # segmented_image = cv2.inRange(img, (0, 0, 245), (10, 10, 256))  # Full marker image (completely red)
 
 
     # Morphological filtering the image
@@ -31,29 +33,44 @@ def detect_marker_contours(img):
 
     contours, hierarchy = cv2.findContours(morp_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    return contours
+    approx_contours = []
+
+    for contour in contours:
+        hull = cv2.convexHull(contour)
+        approx_contours.append(hull)
+
+    return approx_contours
 
 
 def group_contours(contours):   # TODO: Not done. Hierarchical Clustering? K-means? Gaussian Mixture Model?
+    # Output: Array of markers, consisting of multiple contours
     pass
 
 
 def identify_marker(marker):    # TODO: Not done. Perimeter is a horrible measure for discrete edges.
-    area = 0
-    perimeter = 0
+    # area = 0
+    # perimeter = 0
 
-    for contour in marker:
-        area += cv2.contourArea(contour)
-        perimeter += cv2.arcLength(contour, True)
+    # for contour in marker:
+    #     area += cv2.contourArea(contour)
+    #     perimeter += cv2.arcLength(contour, True)
 
-    if (area != 0 or perimeter != 0):
-        ratio = area / perimeter
+    # if (area != 0 or perimeter != 0):
+    #     ratio = area / perimeter
 
-        idx = (np.abs(marker_identifiers - ratio)).argmin()
-        markerID = idx + 1
+    #     idx = (np.abs(marker_identifiers - ratio)).argmin()
+    #     markerID = idx + 1
         
-        return markerID
+    #     return markerID
     
+    # else:
+    #     return -1
+
+
+    if (len(marker) != 0):        
+        idx = (np.abs(marker_identifiers - len(marker))).argmin()
+        markerID = idx + 1
+        return markerID
     else:
         return -1
 
@@ -92,7 +109,7 @@ def show_image(img, contours):
 if __name__ == "__main__":
 
     # Load image
-    # path = "Markers/Marker1.png"
+    # path = "Markers/Marker5.png"
     path = "Sample_images/5.jpg"
     img = cv2.imread(path)
 
@@ -111,4 +128,4 @@ if __name__ == "__main__":
     print(markerID)
 
 
-    # show_image(img, marker_contours)
+    show_image(img, marker_contours)

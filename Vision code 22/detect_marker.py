@@ -1,3 +1,4 @@
+from dis import show_code
 import cv2
 import numpy as np
 
@@ -77,6 +78,16 @@ def mahalanobis(pixels, cov_inv, avg):
     return mahalanobis_segmented
 
 
+def show_image(img, contours):
+
+    cv2.drawContours(image=img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=5, lineType=cv2.LINE_AA)
+    height, width, channels = img.shape 
+    dim = (600, round(600 * height/width))
+    img = cv2.resize(img, dim, interpolation=cv2.INTER_LINEAR)
+
+    cv2.imshow('contours', img)
+    cv2.waitKey(0)
+
 
 if __name__ == "__main__":
 
@@ -100,13 +111,4 @@ if __name__ == "__main__":
     print(markerID)
 
 
-
-
-
-    cv2.drawContours(image=img, contours=marker_contours, contourIdx=-1, color=(0, 255, 0), thickness=5, lineType=cv2.LINE_AA)
-    height, width, channels = img.shape 
-    dim = (600, round(600 * height/width))
-    img = cv2.resize(img, dim, interpolation=cv2.INTER_LINEAR)
-
-    cv2.imshow('contours', img)
-    cv2.waitKey(0)
+    # show_image(img, marker_contours)

@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
+import pandas as pd
 
 import scipy.cluster.hierarchy as shc
+from sklearn.cluster import KMeans
 from matplotlib import pyplot as plt
 
 
@@ -54,10 +56,32 @@ def group_contours(contours):   # TODO: Not done. Hierarchical Clustering? K-mea
 
             contour_moments.append([cx, cy])
 
+    # K-means (Modified: https://towardsdatascience.com/an-approach-for-choosing-number-of-clusters-for-k-means-c28e614ecb2c)
 
-    dend = shc.dendrogram(shc.linkage(contour_moments, method='single'))
+    alpha_k = 0.2
+
+    ans = []
+    K = range(1, len(contour_moments))
+    for k in K:
+        inertia_o = np.square((contour_moments - np.mean( contour_moments, axis=0))).sum()
+        kmeans = KMeans(n_clusters=k, random_state=0).fit(contour_moments)
+        scaled_inertia = kmeans.inertia_ / inertia_o + alpha_k * k
+        ans.append((k, scaled_inertia))
+
+    results = pd.DataFrame(ans, columns = ['k','Scaled Inertia']).set_index('k')
+    best_k = results.idxmin()[0]
+
+
+    # plot the results
+    print(KMeans(n_clusters=best_k, random_state=0).fit(contour_moments))
+
+    plt.figure(figsize=(7,4))
+    plt.plot(results,'o')
+    plt.title('Adjusted Inertia for each K')
+    plt.xlabel('K')
+    plt.ylabel('Adjusted Inertia')
+    plt.xticks(range(2,10,1))
     plt.show()
-
 
 
     return np.array([contours], dtype=object)

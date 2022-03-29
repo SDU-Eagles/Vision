@@ -56,7 +56,7 @@ def group_contours(contours):   # TODO: Not done. Hierarchical Clustering? K-mea
 
 
     dend = shc.dendrogram(shc.linkage(contour_moments, method='single'))
-    # plt.show()
+    plt.show()
 
 
 

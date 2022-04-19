@@ -7,40 +7,11 @@ import csv
 import numpy as np 
 import pandas as pd  
 
-# connection = mavutil.mavlink_connection("/dev/ttyACM0")
+import dronekit_sitl
+sitl = dronekit_sitl.start_default()
+connection_string = sitl.connection_string()
 
-# connection.wait_heartbeat()
-# connection.
-
-# print("Heartbeat from system (system %u component %u)" % (connection.target_system, connection.target_component))
-
-
-# while True:
-#     try: 
-#         message = connection.messages['GLOBAL_POSITION_INT']
-#     except : 
-#         print("failed")
-#         continue
-#     else:
-#         print("lat: %u lon: %u" % (message.lat,message.lon))
-
-# message = connection.messages['GLOBAL_POSITION_INT']
-
-
-
-# fc = flightController.fligtController(port="/dev/ttyACM0")
-# while True:
-#     lat,lon,alt,angle,time_stamp = fc.getGPScords()
-#     # print("lat: %i"%(lat))
-#     # print("lon: %i"%(lon))
-#     # print("alt: %i"%(alt))
-#     print("angle: %f , time: %f"%(angle, time_stamp))
-#     sleep(1)
-
-
-
-
-connection_string = "/dev/ttyACM0" # sitl.connection_string()
+#connection_string = "/dev/ttyACM0" # sitl.connection_string()
 
 # Import DroneKit-Python
 from dronekit import connect, VehicleMode
@@ -58,11 +29,20 @@ print(" Is Armable?: %s" % vehicle.is_armable)
 print(" System status: %s" % vehicle.system_status.state)
 print(" Mode: %s" % vehicle.mode.name)    # settable
 
+vehicle.lat = 0
+vehicle.lon = 0
+vehicle.alt = 0
+vehicle.angle = 0
+
 @vehicle.on_message("GLOBAL_POSITION_INT")
 def pancake(self, name, message):
     print("time: %s" % message.time_boot_ms)
     print("system: %s"% time.time())
     print('angle: %s' % message.hdg)
+    self.lat = message.lat
+    self.lon = message.lon
+    self.alt = message.alt
+    self.angle = message.hdg/100
 
 sleep(10)
 
@@ -70,5 +50,5 @@ sleep(10)
 vehicle.close()
 
 # Shut down simulator
-print("Completed")
+print("Completed cord resived: %i" % vehicle.lat)
 

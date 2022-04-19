@@ -1,0 +1,4 @@
+Template matching
+SPR (Statistical Pattern Recognition)
+SIFT (Scale Invariant Feature Transform)
+Chamfer

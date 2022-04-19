@@ -1,0 +1,17 @@
+
+Install OpenCv for Python in Linux:
+
+download the installer scripts "install-opencv.sh"
+
+and run the command
+
+sh install-opencv.sh
+
+the script is designed to download opencv and opencv_contrib and compile it from souce
+the reasion it is compiled from souce it to give it access to the power of the GPU 
+
+after the isntallastion you can delete the opencv and opencv_contrib foulders it creates
+
+
+to use opencv in python
+import cv2

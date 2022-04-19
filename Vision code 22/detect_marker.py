@@ -42,9 +42,10 @@ def mahalanobis(img, pixels, cov_inv, avg):
     return mahalanobis_segmented
 
 
-def group_contours(contours):   # TODO: Not done. Hierarchical Clustering? K-means? Gaussian Mixture Model?
+def group_contours(contours):   # TODO: Not done. 
     # Output: Array of markers, consisting of multiple contours
     
+    contour_info = []
     contour_moments = []
 
     for contour in contours:
@@ -55,37 +56,60 @@ def group_contours(contours):   # TODO: Not done. Hierarchical Clustering? K-mea
             cy = int(M['m01'] / M['m00'])
 
             contour_moments.append([cx, cy])
+            contour_info.append([contour, [cx, cy]])
+
+
 
     # K-means (Modified: https://towardsdatascience.com/an-approach-for-choosing-number-of-clusters-for-k-means-c28e614ecb2c)
 
-    alpha_k = 0.2
+    kmeans_clusters = []
 
+    alpha_k = 0.2
     ans = []
     K = range(1, len(contour_moments))
     for k in K:
-        inertia_o = np.square((contour_moments - np.mean( contour_moments, axis=0))).sum()
+        inertia_o = np.square((contour_moments - np.mean(contour_moments, axis=0))).sum()
         kmeans = KMeans(n_clusters=k, random_state=0).fit(contour_moments)
         scaled_inertia = kmeans.inertia_ / inertia_o + alpha_k * k
         ans.append((k, scaled_inertia))
+
+        kmeans_clusters.append(kmeans)
+
 
     results = pd.DataFrame(ans, columns = ['k','Scaled Inertia']).set_index('k')
     best_k = results.idxmin()[0]
 
 
+    marker_clusters = [[None]] * (best_k + 1)
+
+    for contour, moment in contour_info:
+        cluster_assignment = kmeans_clusters[best_k].predict(np.array(moment).reshape(1, -1))[0]
+        # print(cluster_assignment)
+        marker_clusters[cluster_assignment].append(contour)
+    
+
+
+    print(marker_clusters)
+
+
+
+
+
     # plot the results
-    print(KMeans(n_clusters=best_k, random_state=0).fit(contour_moments))
+    # print(KMeans(n_clusters=best_k, random_state=0).fit(contour_moments))
 
-    plt.figure(figsize=(7,4))
-    plt.plot(results,'o')
-    plt.title('Adjusted Inertia for each K')
-    plt.xlabel('K')
-    plt.ylabel('Adjusted Inertia')
-    plt.xticks(range(2,10,1))
-    plt.show()
+    # plt.figure(figsize=(7,4))
+    # plt.plot(results,'o')
+    # plt.title('Adjusted Inertia for each K')
+    # plt.xlabel('K')
+    # plt.ylabel('Adjusted Inertia')
+    # plt.xticks(range(2,10,1))
+    # plt.show()
 
 
-    return np.array([contours], dtype=object)
+    # return np.array([contours], dtype=object)
 
+    return marker_clusters
 
 def detect_marker_contours(img, debug = False, img_is_groundtruth = False):
 
@@ -112,7 +136,17 @@ def detect_marker_contours(img, debug = False, img_is_groundtruth = False):
         approx_contours.append(hull)
 
 
+
+
+
     grouped_markers = group_contours(approx_contours)
+
+    for marker in grouped_markers:
+        # Draw bounding box around contours
+        x1,y1,w,h = cv2.boundingRect(marker)
+        x2 = x1+w
+        y2 = y1+h
+        img = cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 5)
 
 
     if (debug):
@@ -136,3 +170,6 @@ if __name__ == "__main__":
 
 
     marker_contours = detect_marker_contours(img, debug = True, img_is_groundtruth = False)
+
+    # show_image(img, marker_contours)
+    

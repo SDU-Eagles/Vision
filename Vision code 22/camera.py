@@ -13,7 +13,7 @@ camera.vflip = False
 rawCapture = PiRGBArray(camera, size=(640, 480))
 
 camera.start_preview()
-time.sleep(5)
+time.sleep(30)
 camera.stop_preview()
 
 

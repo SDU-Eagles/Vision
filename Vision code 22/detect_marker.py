@@ -1,14 +1,10 @@
 import cv2
-from math import dist
 import numpy as np
+import pandas as pd
 
-# path = "Markers/Marker1.png"
-path = "Sample_images/5.jpg"
-img = cv2.imread(path)
-height, width, channels = img.shape 
-dim = (600, round(600 * height/width))
-img = cv2.resize(img, dim, interpolation=cv2.INTER_LINEAR)
-pixels = np.reshape(img, (-1, 3))
+import scipy.cluster.hierarchy as shc
+from sklearn.cluster import KMeans
+from matplotlib import pyplot as plt
 
 
 # Inversed covariance matrix and average from "colour_variance/get_threshold.py"
@@ -21,7 +17,18 @@ avg = np.array([100.40176446, 92.74843263, 209.55799693])
 
 
 
-def mahalanobis(pixels, cov_inv, avg):
+def show_image(img, contours):
+
+    cv2.drawContours(image=img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=5, lineType=cv2.LINE_AA)
+    height, width, channels = img.shape 
+    dim = (600, round(600 * height/width))
+    img = cv2.resize(img, dim, interpolation=cv2.INTER_LINEAR)
+
+    cv2.imshow('contours', img)
+    cv2.waitKey(0)
+
+
+def mahalanobis(img, pixels, cov_inv, avg):
     # Mahalanobis based segmentation
     shape = pixels.shape
     diff = pixels - np.repeat([avg], shape[0], axis=0)
@@ -35,14 +42,97 @@ def mahalanobis(pixels, cov_inv, avg):
     return mahalanobis_segmented
 
 
-segmented_image = mahalanobis(pixels, cov_inv, avg)
-edges = cv2.Canny(image=segmented_image, threshold1=100, threshold2=200)
+def group_contours(contours):   # TODO: Not done. Hierarchical Clustering? K-means? Gaussian Mixture Model?
+    # Output: Array of markers, consisting of multiple contours
+    
+    contour_moments = []
 
-contours, hierarchy = cv2.findContours(segmented_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    for contour in contours:
+        M = cv2.moments(contour)
+        
+        if M["m00"] != 0:
+            cx = int(M['m10'] / M['m00'])
+            cy = int(M['m01'] / M['m00'])
 
-cv2.drawContours(image=img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=1, lineType=cv2.LINE_AA)
+            contour_moments.append([cx, cy])
+
+    # K-means (Modified: https://towardsdatascience.com/an-approach-for-choosing-number-of-clusters-for-k-means-c28e614ecb2c)
+
+    alpha_k = 0.2
+
+    ans = []
+    K = range(1, len(contour_moments))
+    for k in K:
+        inertia_o = np.square((contour_moments - np.mean( contour_moments, axis=0))).sum()
+        kmeans = KMeans(n_clusters=k, random_state=0).fit(contour_moments)
+        scaled_inertia = kmeans.inertia_ / inertia_o + alpha_k * k
+        ans.append((k, scaled_inertia))
+
+    results = pd.DataFrame(ans, columns = ['k','Scaled Inertia']).set_index('k')
+    best_k = results.idxmin()[0]
 
 
-cv2.imshow('mahalanobis', segmented_image)
-cv2.imshow('contours', img)
-cv2.waitKey(0)
+    # plot the results
+    print(KMeans(n_clusters=best_k, random_state=0).fit(contour_moments))
+
+    plt.figure(figsize=(7,4))
+    plt.plot(results,'o')
+    plt.title('Adjusted Inertia for each K')
+    plt.xlabel('K')
+    plt.ylabel('Adjusted Inertia')
+    plt.xticks(range(2,10,1))
+    plt.show()
+
+
+    return np.array([contours], dtype=object)
+
+
+def detect_marker_contours(img, debug = False, img_is_groundtruth = False):
+
+    img = cv2.GaussianBlur(img, (3, 3), 0)
+    
+    pixels = np.reshape(img, (-1, 3))
+
+    if (img_is_groundtruth):
+        segmented_image = cv2.inRange(img, (0, 0, 245), (10, 10, 256))  # Full marker image (completely red)
+    else:
+        segmented_image = mahalanobis(img, pixels, cov_inv, avg)
+
+
+    # Morphological filtering the image
+    kernel_cls = np.ones((9, 9), np.uint8)
+    morp_image = cv2.morphologyEx(segmented_image, cv2.MORPH_CLOSE, kernel_cls)
+
+    contours, hierarchy = cv2.findContours(morp_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    approx_contours = []
+
+    for contour in contours:
+        hull = cv2.convexHull(contour)
+        approx_contours.append(hull)
+
+
+    grouped_markers = group_contours(approx_contours)
+
+
+    if (debug):
+        if (len(approx_contours) == 0):
+            print("No markers found!")
+
+        show_image(img, approx_contours)
+
+
+    return grouped_markers
+
+
+
+
+if __name__ == "__main__":
+
+    # Load image
+    # path = "Markers/Marker5.png"
+    path = "Sample_images/9.jpg"
+    img = cv2.imread(path)
+
+
+    marker_contours = detect_marker_contours(img, debug = True, img_is_groundtruth = False)

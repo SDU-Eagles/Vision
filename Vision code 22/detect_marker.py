@@ -61,13 +61,11 @@ def group_contours(contours):   # TODO: Not done.
 
 
     # K-means (Modified: https://towardsdatascience.com/an-approach-for-choosing-number-of-clusters-for-k-means-c28e614ecb2c)
-
     kmeans_clusters = []
 
     alpha_k = 0.2
     ans = []
-    K = range(1, len(contour_moments))
-    for k in K:
+    for k in range(1, len(contour_moments)):
         inertia_o = np.square((contour_moments - np.mean(contour_moments, axis=0))).sum()
         kmeans = KMeans(n_clusters=k, random_state=0).fit(contour_moments)
         scaled_inertia = kmeans.inertia_ / inertia_o + alpha_k * k
@@ -80,16 +78,29 @@ def group_contours(contours):   # TODO: Not done.
     best_k = results.idxmin()[0]
 
 
-    marker_clusters = [[None]] * (best_k + 1)
 
-    for contour, moment in contour_info:
-        cluster_assignment = kmeans_clusters[best_k].predict(np.array(moment).reshape(1, -1))[0]
-        # print(cluster_assignment)
+    # marker_clusters = np.empty(best_k + 1, dtype=object)
+
+    marker_clusters = []
+    marker_clusters = [[] for i in range(best_k + 1)]
+
+
+    labels = kmeans_clusters[best_k].labels_
+
+    for i, contour in enumerate(contours):
+        cluster_assignment = labels[i]
         marker_clusters[cluster_assignment].append(contour)
-    
 
 
-    print(marker_clusters)
+
+
+
+    # for contour, moment in contour_info:
+    #     cluster_assignment = kmeans_clusters[best_k].predict(np.array(moment).reshape(1, -1))[0]
+    #     # print(cluster_assignment)
+    #     marker_clusters[cluster_assignment].append(contour)
+
+    # print(marker_clusters)
 
 
 
@@ -110,6 +121,7 @@ def group_contours(contours):   # TODO: Not done.
     # return np.array([contours], dtype=object)
 
     return marker_clusters
+
 
 def detect_marker_contours(img, debug = False, img_is_groundtruth = False):
 

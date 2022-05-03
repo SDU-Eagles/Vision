@@ -6,6 +6,8 @@ import scipy.cluster.hierarchy as shc
 from sklearn.cluster import KMeans
 from matplotlib import pyplot as plt
 
+from clustering_CullenSun import agglomerative_cluster
+
 
 # Inversed covariance matrix and average from "colour_variance/get_threshold.py"
 # Used to determine Mahalanobis distance for colour segmentation
@@ -17,7 +19,7 @@ avg = np.array([100.40176446, 92.74843263, 209.55799693])
 
 
 
-def show_image(img, contours):
+def show_image(img, contours = []):
 
     cv2.drawContours(image=img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=5, lineType=cv2.LINE_AA)
     height, width, channels = img.shape 
@@ -42,88 +44,7 @@ def mahalanobis(img, pixels, cov_inv, avg):
     return mahalanobis_segmented
 
 
-def group_contours(contours):   # TODO: Not done. 
-    # Output: Array of markers, consisting of multiple contours
-    
-    contour_info = []
-    contour_moments = []
-
-    for contour in contours:
-        M = cv2.moments(contour)
-        
-        if M["m00"] != 0:
-            cx = int(M['m10'] / M['m00'])
-            cy = int(M['m01'] / M['m00'])
-
-            contour_moments.append([cx, cy])
-            contour_info.append([contour, [cx, cy]])
-
-
-
-    # K-means (Modified: https://towardsdatascience.com/an-approach-for-choosing-number-of-clusters-for-k-means-c28e614ecb2c)
-    kmeans_clusters = []
-
-    alpha_k = 0.2
-    ans = []
-    for k in range(1, len(contour_moments)):
-        inertia_o = np.square((contour_moments - np.mean(contour_moments, axis=0))).sum()
-        kmeans = KMeans(n_clusters=k, random_state=0).fit(contour_moments)
-        scaled_inertia = kmeans.inertia_ / inertia_o + alpha_k * k
-        ans.append((k, scaled_inertia))
-
-        kmeans_clusters.append(kmeans)
-
-
-    results = pd.DataFrame(ans, columns = ['k','Scaled Inertia']).set_index('k')
-    best_k = results.idxmin()[0]
-
-
-
-    # marker_clusters = np.empty(best_k + 1, dtype=object)
-
-    marker_clusters = []
-    marker_clusters = [[] for i in range(best_k + 1)]
-
-
-    labels = kmeans_clusters[best_k].labels_
-
-    for i, contour in enumerate(contours):
-        cluster_assignment = labels[i]
-        marker_clusters[cluster_assignment].append(contour)
-
-
-
-
-
-    # for contour, moment in contour_info:
-    #     cluster_assignment = kmeans_clusters[best_k].predict(np.array(moment).reshape(1, -1))[0]
-    #     # print(cluster_assignment)
-    #     marker_clusters[cluster_assignment].append(contour)
-
-    # print(marker_clusters)
-
-
-
-
-
-    # plot the results
-    # print(KMeans(n_clusters=best_k, random_state=0).fit(contour_moments))
-
-    # plt.figure(figsize=(7,4))
-    # plt.plot(results,'o')
-    # plt.title('Adjusted Inertia for each K')
-    # plt.xlabel('K')
-    # plt.ylabel('Adjusted Inertia')
-    # plt.xticks(range(2,10,1))
-    # plt.show()
-
-
-    # return np.array([contours], dtype=object)
-
-    return marker_clusters
-
-
-def detect_marker_contours(img, debug = False, img_is_groundtruth = False):
+def detect_markers(img, debug = False, img_is_groundtruth = False):
 
     img = cv2.GaussianBlur(img, (3, 3), 0)
     
@@ -141,34 +62,32 @@ def detect_marker_contours(img, debug = False, img_is_groundtruth = False):
 
     contours, hierarchy = cv2.findContours(morp_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    approx_contours = []
-
-    for contour in contours:
-        hull = cv2.convexHull(contour)
-        approx_contours.append(hull)
+    grouped_markers = agglomerative_cluster(contours)
 
 
-
-
-
-    grouped_markers = group_contours(approx_contours)
+    area_of_interest = []
 
     for marker in grouped_markers:
         # Draw bounding box around contours
         x1,y1,w,h = cv2.boundingRect(marker)
         x2 = x1+w
         y2 = y1+h
-        img = cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 5)
+        # img = cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 5)
+
+        area_of_interest.append([[x1, y1], [x2, y2]])
+
+    area_of_interest = np.array(area_of_interest) 
+
 
 
     if (debug):
-        if (len(approx_contours) == 0):
+        if (len(contours) == 0):
             print("No markers found!")
 
-        show_image(img, approx_contours)
+        print(area_of_interest)
+        show_image(img, contours)
 
-
-    return grouped_markers
+    return area_of_interest
 
 
 
@@ -181,7 +100,6 @@ if __name__ == "__main__":
     img = cv2.imread(path)
 
 
-    marker_contours = detect_marker_contours(img, debug = True, img_is_groundtruth = False)
+    marker_areas = detect_markers(img, debug = True, img_is_groundtruth = False)
 
-    # show_image(img, marker_contours)
     

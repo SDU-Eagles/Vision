@@ -1,6 +1,8 @@
+from urllib import response
 import cv2
 
-from detect_marker import detect_markers, show_image
+from mark_markers import mark_markers
+from square_response import square_response
 from identify_marker import identify_marker
 from locate_marker import locate_marker
 
@@ -14,7 +16,8 @@ def resize_img(img):
 
 def show_cutout(img, ulc, lrc):
     zoom_img = img[ulc[1]:lrc[1], ulc[0]:lrc[0]]
-    show_image(zoom_img)
+    cv2.imshow('cutout', zoom_img)
+    cv2.waitKey(0)
 
 
 
@@ -25,11 +28,12 @@ img = cv2.imread(path)
 img = resize_img(img)
 
 # Detect marker areas
-marker_area = detect_markers(img, debug = False, img_is_groundtruth = False)
+response = square_response(img, debug = False)
+marker_areas = mark_markers(response, debug = False)
 
-show_image(img)
 
-for area in marker_area:
+
+for area in marker_areas:
 
     show_cutout(img, area[0], area[1])
 

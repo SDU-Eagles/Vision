@@ -47,5 +47,5 @@ def main(filename, debug=False):
 
 if __name__ == "__main__":
     
-    filename = "Sample_images/1.jpg"
+    filename = "Sample_images/9.jpg"
     main(filename, debug=True)

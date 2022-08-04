@@ -25,17 +25,21 @@ def show_cutout(img, ulc, lrc):
 # path = "Markers/Marker5.png"
 path = "Sample_images/9.jpg"
 img = cv2.imread(path)
-img = resize_img(img)
+# img = resize_img(img)
+
+
 
 # Detect marker areas
 response = square_response(img, debug = False)
-marker_areas = mark_markers(response, debug = False)
+marker_areas = mark_markers(img, response, debug = False)
 
 
+cv2.imwrite("output/orig_main.png", img)
+cv2.imwrite("output/square_response_main.png", response)
 
-for area in marker_areas:
+# for area in marker_areas:
 
-    show_cutout(img, area[0], area[1])
+#     show_cutout(img, area[0], area[1])
 
-    markerID = identify_marker(area)
-    print('Marker ID: ', markerID)
+#     markerID = identify_marker(area)
+#     print('Marker ID: ', markerID)

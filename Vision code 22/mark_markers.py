@@ -107,9 +107,11 @@ def mark_markers(img, response, debug=False):
                 point = Value_Point(i, j, value)
                 nr_of_markers = len(markers)
                 
+                
                 if nr_of_markers == 0:
                     markers.append(Marker(point))
                     
+                # Allocate points into marker areas depending on distance to existing markers
                 else:
                     no_marker_fit = False
                     for m, marker in enumerate(markers):
@@ -133,13 +135,12 @@ def mark_markers(img, response, debug=False):
         for marker in markers:
             
             color = np.random.randint(256, size=3)
-            color = ( int(color[0]), int(color[1]), int(color[2]))
             
             for point in marker.points:
-                cv2.circle(img_marked, (point.x, point.y), 10, color, -1)
+                cv2.circle(img_marked, (point.x, point.y), 10, (int(color[0]), int(color[1]), int(color[2])), -1)
             
-        mean = markers[0].weighted_mean()
-        cv2.circle(img_marked, (int(mean[0]), int(mean[1])), 20, (255,255,255), -1)
+            mean = marker.weighted_mean()
+            cv2.circle(img_marked, (int(mean[0]), int(mean[1])), 20, (200,200,255), -1)
 
         cv2.imwrite("output/mark_markers.png", img_marked)
 

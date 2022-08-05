@@ -31,7 +31,7 @@ img = cv2.imread(path)
 
 # Detect marker areas
 response = square_response(img, debug = False)
-marker_areas = mark_markers(img, response, debug = False)
+marker_areas = mark_markers(img, response, debug = True)
 
 
 cv2.imwrite("output/orig_main.png", img)

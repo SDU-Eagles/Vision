@@ -45,6 +45,7 @@ def square_response(img, debug=False):
         cv2.imwrite("output/02_v1.png", temp1 * 127)
         cv2.imwrite("output/03_v2.png", temp2 * 127)
         cv2.imwrite("output/05_strength.png", response * response_weight)
+        print("Wrote images to path: 'output/0X_attribute.png'")
         
         
     return response * response_weight

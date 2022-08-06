@@ -30,12 +30,10 @@ img = cv2.imread(path)
 
 
 # Detect marker areas
-response = square_response(img, debug = False)
-marker_areas = mark_markers(img, response, debug = True)
+response = square_response(img, debug = True)
+marker_locations = mark_markers(img, response, debug = True)
 
-
-cv2.imwrite("output/orig_main.png", img)
-cv2.imwrite("output/square_response_main.png", response)
+print("Number of found markers: ", len(marker_locations))
 
 # for area in marker_areas:
 

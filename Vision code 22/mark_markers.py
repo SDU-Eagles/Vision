@@ -6,9 +6,10 @@ import camera_param_intrinsic
 
 '''
 TODO:
-    - Change centre point identifier to choose mean, rather than simply highest value.
     - Get rotation information
     - If image get resized, the focal length in pixels should be adjusted.
+    - Filter markers with few response points
+    - Fix weighted_mean and use that instead of spartial (worth it?)
 '''
 
 
@@ -28,10 +29,16 @@ class Marker:
         self.id_point = _point
         self.points = [_point]
         
-    def average(self, _):
-        pass
         
     def weighted_mean(self):
+        '''
+        Like process of weighted mean: (need to be confirmed)
+        Get mean of coordinates
+        Subtract mean from all point coordinates (demean)
+        Calculate mean of new points weighed with value (normalised)
+        Centre = new_mean + old_mean   
+        https://physics.stackexchange.com/questions/685186/weighted-center-of-mass-of-an-image-using-the-correct-weights             
+        '''
 
         # Calculate mean of coordinates
         sum = [0, 0]
@@ -39,6 +46,7 @@ class Marker:
             sum[0] += point.x
             sum[1] += point.y
         mean_spartial = (sum[0] / len(self.points), sum[1] / len(self.points))
+        # return mean_spartial
 
         # Normalise coordinates
         points_demeaned = []
@@ -47,21 +55,18 @@ class Marker:
         
         # Calculate weighted mean of normalised coordinates
         sum = [0, 0]
+        valsum = 0 # Total sum of pixel values
         for point in points_demeaned:
             sum[0] += point.x * point.value
             sum[1] += point.y * point.value
-        mean_normalised_weighted = (sum[0] / len(self.points), sum[1] / len(self.points))
+            valsum += point.value
+        mean_normalised_weighted = (sum[0] / valsum, sum[1] / valsum)
+        # mean_normalised_weighted = (sum[0] / len(self.points), sum[1] / len(self.points))
         
         # Final weighted mean  
         mean_weighted = (mean_spartial[0] + mean_normalised_weighted[0], mean_spartial[1] + mean_normalised_weighted[1])
         return mean_weighted
 
-        '''
-        Get mean of coordinates
-        Subtract mean from all point coordinates (demean)
-        Calculate mean of new points weighed with value (normalised)
-        Centre = new_mean + old_mean                
-        '''
 
 
 
@@ -126,42 +131,34 @@ def mark_markers(img, response, debug=False):
                     
                     if no_marker_fit:
                         markers.append(Marker(point))
+                        
+    # Extract information to return      
+    marker_locations = []
+    for marker in markers:
+        marker_locations.append(marker.weighted_mean())
 
 
-
-
-
+    # Write images for visual purposes
     if (debug == True):
         for marker in markers:
             
             color = np.random.randint(256, size=3)
+            color = (int(color[0]), int(color[1]), int(color[2]))
             
-            for point in marker.points:
-                cv2.circle(img_marked, (point.x, point.y), 10, (int(color[0]), int(color[1]), int(color[2])), -1)
+            # for point in marker.points:
+            #     cv2.circle(img_marked, (point.x, point.y), 2, color, -1)
             
             mean = marker.weighted_mean()
             cv2.circle(img_marked, (int(mean[0]), int(mean[1])), 20, (200,200,255), -1)
+            start_point, end_point = get_area_points((int(mean[0]), int(mean[1])))
+            cv2.rectangle(img_marked, start_point, end_point, color, 5)
+            
 
         cv2.imwrite("output/mark_markers.png", img_marked)
+        print("Wrote image to path: 'output/mark_markers.png'")
 
 
 
-    # highest_response = 0
-    
-    # for j, row in enumerate(response):
-    #     for i, value in enumerate(row):
-    #         if value > highest_response:
-                
-    #             cv2.circle(img_marked, (i,j), 10, (200,100,255), -1)
-                
-    #             highest_response = value
-    #             start_point, end_point = get_area_points((i, j))
-    #             markers = [start_point, end_point, value]  # [ulc, lrc, value]
+    return marker_locations
 
-    
-    # cv2.rectangle(img_marked, markers[0], markers[1], (0, 0, 255), 5)
-
-        
-    marker_areas = 0
-    return marker_areas
 

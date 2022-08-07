@@ -75,7 +75,6 @@ class Marker:
         return sum / size**2
 
 
-
 # Define area as two points for cv to draw (upper left corner, lower right corner)
 def get_area_points(centre_point, marker_size):
     

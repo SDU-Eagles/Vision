@@ -28,6 +28,12 @@ def square_response(img, marker_image_size, debug=False):
     v2_imag = cv2.filter2D(np.imag(v2), -1, kernel)
     gradient_vectors = v2_real + v2_imag*(1j)
     
+    # angles = np.zeros(gradient_vectors.shape)
+    # for i, row in enumerate(gradient_vectors):
+    #     for j, c in enumerate(row):
+    #         angle = np.angle(c)
+    #         angles[i, j] = angle
+
 
     # Angle of complex numbers
     angles = cv2.phase(v2_real, v2_imag)
@@ -37,7 +43,7 @@ def square_response(img, marker_image_size, debug=False):
     # Square response (normalised to 0-100)
     response = 100 * np.abs(gradient_vectors) / np.max(np.abs(gradient_vectors))
     
-    
+
     if debug:
         cv2.imwrite("output/01_orig.png", img)
         cv2.imwrite("output/02_a-channel.png", img_lab)
@@ -69,7 +75,6 @@ if __name__ == "__main__":
     filename = "Sample_images/9.jpg"
     img = cv2.imread(filename)
     
-
     response, angles = square_response(img, 250, debug=True)
     
     cv2.imwrite("output/square_response.png", response)

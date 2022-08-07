@@ -5,7 +5,6 @@ import numpy as np
 '''
 TODO:
     - Get rotation information
-    - If image get resized, the focal length in pixels should be adjusted.
     - Filter markers with few response points
     - Fix weighted_mean and use that instead of spartial (worth it?)
 '''
@@ -73,11 +72,11 @@ def get_area_points(centre_point, marker_size):
 
 
 # Define areas arond markers for identification and location.
-def mark_markers(img, response, marker_image_size, debug=False):
+def mark_markers(img, response, marker_image_size, scale_factor = 1, debug=False):
     
     img_marked = img.copy()
     
-    DISTANCE_THRESHOLD = 200 + 20  # Marker size + margin
+    DISTANCE_THRESHOLD = marker_image_size + 20  # Marker size + margin
     VALUE_THRESHOLD = 40
     
     markers = []
@@ -124,12 +123,12 @@ def mark_markers(img, response, marker_image_size, debug=False):
             color = (int(color[0]), int(color[1]), int(color[2]))
             
             # for point in marker.points:
-            #     cv2.circle(img_marked, (point.x, point.y), 2, color, -1)
+            #     cv2.circle(img_marked, (point.x, point.y), int(2*scale_factor), color, -1)
             
             mean = marker.weighted_mean()
-            cv2.circle(img_marked, (int(mean[0]), int(mean[1])), 20, (200,200,255), -1)
+            cv2.circle(img_marked, (int(mean[0]), int(mean[1])), int(20*scale_factor), (200,200,255), -1)
             start_point, end_point = get_area_points((int(mean[0]), int(mean[1])), marker_image_size)
-            cv2.rectangle(img_marked, start_point, end_point, color, 5)
+            cv2.rectangle(img_marked, start_point, end_point, color, int(5*scale_factor))
             
 
         cv2.imwrite("output/mark_markers.png", img_marked)

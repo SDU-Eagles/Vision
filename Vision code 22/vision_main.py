@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 import camera_param_intrinsic
 
@@ -12,7 +13,8 @@ def resize_img(img):
     height, width, _ = img.shape 
     dim = (600, round(600 * height/width))
     img = cv2.resize(img, dim, interpolation=cv2.INTER_LINEAR)
-    return img
+    scale_factor = 600 / height
+    return img, scale_factor
 
 
 # Expected marker size in image.
@@ -40,16 +42,16 @@ def show_cutout(img, centre_point, marker_size):
 # path = "Markers/Marker5.png"
 path = "Sample_images/9.jpg"
 img = cv2.imread(path)
-# img = resize_img(img)
+img, scale_factor = resize_img(img)
 
 # Get marker information
 world_marker_size = 50
 altitide = 5
-marker_image_size = marker_image_size(world_marker_size, altitide, camera_param_intrinsic.FOCAL_LENGTH_PX)
-
+marker_image_size = np.ceil(marker_image_size(world_marker_size, altitide, camera_param_intrinsic.FOCAL_LENGTH_PX) * scale_factor)
+print(marker_image_size)
 # Detect markers
-response, gradient_vectors = square_response(img, debug = True)
-marker_locations = mark_markers(img, response, marker_image_size, debug = True)
+response, gradient_vectors = square_response(img, marker_image_size, debug = True)
+marker_locations = mark_markers(img, response, marker_image_size, scale_factor, debug = True)
 
 print("Number of found markers: ", len(marker_locations))
 
@@ -60,3 +62,4 @@ print("Number of found markers: ", len(marker_locations))
 
 #     markerID = identify_marker(area)
 #     print('Marker ID: ', markerID)
+

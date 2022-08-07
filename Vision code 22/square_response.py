@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def square_response(img, debug=False):
+def square_response(img, marker_image_size, debug=False):
 
     src = cv2.GaussianBlur(img, (3, 3), 0)
     
@@ -23,10 +23,17 @@ def square_response(img, debug=False):
     temp1 = np.real(v1) / np.max(np.abs(v1)) + 0.5  # Show gradients on grey bg
     temp2 = np.real(v2) / np.max(np.abs(v2)) + 0.5  
 
-    kernel = np.ones((110, 110), np.float32)/110/110
+    kernel = np.ones((int(marker_image_size/2), int(marker_image_size/2)), np.float32)
     v2_real = cv2.filter2D(np.real(v2), -1, kernel)
     v2_imag = cv2.filter2D(np.imag(v2), -1, kernel)
     gradient_vectors = v2_real + v2_imag*(1j)
+    
+    
+    # angles = np.zeros(gradient_vectors.shape)
+    # for i, row in enumerate(gradient_vectors):
+    #     for j, c in enumerate(row):
+    #         angle = np.angle(c)
+    #         angles[i, j] = angle
 
 
     # Square response (normalised to 0-100)
@@ -50,9 +57,8 @@ if __name__ == "__main__":
     filename = "Sample_images/9.jpg"
     img = cv2.imread(filename)
     
-    response = square_response(img, debug=False)
+    response, gradients = square_response(img, 250, debug=False)
     
     cv2.imwrite("output/square_response.png", response)
     
-    print(np.median(response))
     

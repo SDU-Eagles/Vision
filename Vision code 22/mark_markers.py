@@ -1,15 +1,13 @@
+from cmath import pi
 import cv2
-from cv2 import mean
 import numpy as np
 
-import camera_param_intrinsic
 
 '''
 TODO:
     - Get rotation information
-    - If image get resized, the focal length in pixels should be adjusted.
     - Filter markers with few response points
-    - Fix weighted_mean and use that instead of spartial (worth it?)
+    - Fix world-marker-size to image-marker-size (resizing world marker causes inverted behaviour, but inverting ration din't work earlier)
 '''
 
 
@@ -24,21 +22,17 @@ class Value_Point:
 
 
 class Marker:
-    def __init__(self, _point):
+    def __init__(self, _point, marker_size):
         
         self.id_point = _point
         self.points = [_point]
+        self.location = [0,0]
+        self.rotation = 0
+        self.size = int(marker_size)
         
-        
+                
     def weighted_mean(self):
-        '''
-        Like process of weighted mean: (need to be confirmed)
-        Get mean of coordinates
-        Subtract mean from all point coordinates (demean)
-        Calculate mean of new points weighed with value (normalised)
-        Centre = new_mean + old_mean   
-        https://physics.stackexchange.com/questions/685186/weighted-center-of-mass-of-an-image-using-the-correct-weights             
-        '''
+        # https://physics.stackexchange.com/questions/685186/weighted-center-of-mass-of-an-image-using-the-correct-weights             
 
         # Calculate mean of coordinates
         sum = [0, 0]
@@ -65,25 +59,25 @@ class Marker:
         
         # Final weighted mean  
         mean_weighted = (mean_spartial[0] + mean_normalised_weighted[0], mean_spartial[1] + mean_normalised_weighted[1])
+        mean_weighted = (int(mean_weighted[0]), int(mean_weighted[1]))
         return mean_weighted
+    
 
+    def average_angle(self, angle_grid):
+        
+        size = int(self.size / 2)
+        ulc, _ = get_area_points(self.location, size)
+        sum = 0
+        for i in range(size):
+            for j in range(size):
+                sum += angle_grid[ulc[0] + i, ulc[1] + j]
+        
+        return sum / size**2
 
-
-
-
-
-# Expected marker size in image.
-def marker_image_size(marker_world_size, altitude, focal_length):
-    ratio = altitude / marker_world_size
-    marker_image_size = focal_length * ratio    # TODO: Ratio is inverted, WHY does THIS WORK??
-    # marker_image_size = (marker_world_size * focal_length) / altitude
-    return marker_image_size
 
 
 # Define area as two points for cv to draw (upper left corner, lower right corner)
-def get_area_points(centre_point):
-    
-    marker_size = marker_image_size(50, 5, camera_param_intrinsic.FOCAL_LENGTH_PX)
+def get_area_points(centre_point, marker_size):
     
     i = centre_point[0]
     j = centre_point[1]
@@ -95,16 +89,16 @@ def get_area_points(centre_point):
 
 
 # Define areas arond markers for identification and location.
-def mark_markers(img, response, debug=False):
-    
+def mark_markers(img, response, gradient_angles, marker_image_size, scale_factor = 1, debug=False):
+
     img_marked = img.copy()
     
-    DISTANCE_THRESHOLD = 200 + 20  # Marker size + margin
-    VALUE_THRESHOLD = 40
-    
+    DISTANCE_THRESHOLD = marker_image_size + 20  # Marker size + margin
+    VALUE_THRESHOLD = 20
+
     markers = []
     
-    
+    # Divide response points into marker areas
     for j, row in enumerate(response):
         for i, value in enumerate(row):
             if value > VALUE_THRESHOLD:
@@ -114,7 +108,7 @@ def mark_markers(img, response, debug=False):
                 
                 
                 if nr_of_markers == 0:
-                    markers.append(Marker(point))
+                    markers.append(Marker(point, marker_image_size))
                     
                 # Allocate points into marker areas depending on distance to existing markers
                 else:
@@ -130,12 +124,26 @@ def mark_markers(img, response, debug=False):
                             no_marker_fit = True
                     
                     if no_marker_fit:
-                        markers.append(Marker(point))
+                        markers.append(Marker(point, marker_image_size))
+     
                         
-    # Extract information to return      
+    # Get middle point and angle of markers     
     marker_locations = []
+    marker_rotations = []
+    
     for marker in markers:
-        marker_locations.append(marker.weighted_mean())
+        mean = marker.weighted_mean()
+        marker_locations.append(mean)
+        marker.location = mean
+                
+        # angle = gradient_angles[mean[0], mean[1]]
+        angle = marker.average_angle(gradient_angles)
+        marker_rotations.append(angle)
+        marker.rotation = angle
+        
+                
+        
+    
 
 
     # Write images for visual purposes
@@ -146,19 +154,23 @@ def mark_markers(img, response, debug=False):
             color = (int(color[0]), int(color[1]), int(color[2]))
             
             # for point in marker.points:
-            #     cv2.circle(img_marked, (point.x, point.y), 2, color, -1)
+            #     cv2.circle(img_marked, (point.x, point.y), int(2*scale_factor), color, -1)
             
-            mean = marker.weighted_mean()
-            cv2.circle(img_marked, (int(mean[0]), int(mean[1])), 20, (200,200,255), -1)
-            start_point, end_point = get_area_points((int(mean[0]), int(mean[1])))
-            cv2.rectangle(img_marked, start_point, end_point, color, 5)
+            location = marker.location
+            # angle = marker.rotation + pi/4
+            angle = marker.rotation
+            # Middle point
+            cv2.circle(img_marked, location, int(20*scale_factor), (200,200,255), -1)
+            # Rectangle around marker
+            start_point, end_point = get_area_points(location, marker_image_size)
+            cv2.rectangle(img_marked, start_point, end_point, color, int(np.ceil(5*scale_factor)))
+            # Angle of marker
+            cv2.line(img_marked, location, (int(np.cos(angle)*100*scale_factor)+location[0], int(np.sin(angle)*100*scale_factor)+location[1]), color, int(np.ceil(5*scale_factor)))
             
 
         cv2.imwrite("output/mark_markers.png", img_marked)
         print("Wrote image to path: 'output/mark_markers.png'")
 
 
-
-    return marker_locations
-
+    return marker_locations, marker_rotations
 

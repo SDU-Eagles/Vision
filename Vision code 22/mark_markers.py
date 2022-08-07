@@ -1,8 +1,6 @@
 import cv2
-from cv2 import mean
 import numpy as np
 
-import camera_param_intrinsic
 
 '''
 TODO:
@@ -31,14 +29,7 @@ class Marker:
         
         
     def weighted_mean(self):
-        '''
-        Like process of weighted mean: (need to be confirmed)
-        Get mean of coordinates
-        Subtract mean from all point coordinates (demean)
-        Calculate mean of new points weighed with value (normalised)
-        Centre = new_mean + old_mean   
-        https://physics.stackexchange.com/questions/685186/weighted-center-of-mass-of-an-image-using-the-correct-weights             
-        '''
+        # https://physics.stackexchange.com/questions/685186/weighted-center-of-mass-of-an-image-using-the-correct-weights             
 
         # Calculate mean of coordinates
         sum = [0, 0]
@@ -69,21 +60,8 @@ class Marker:
 
 
 
-
-
-
-# Expected marker size in image.
-def marker_image_size(marker_world_size, altitude, focal_length):
-    ratio = altitude / marker_world_size
-    marker_image_size = focal_length * ratio    # TODO: Ratio is inverted, WHY does THIS WORK??
-    # marker_image_size = (marker_world_size * focal_length) / altitude
-    return marker_image_size
-
-
 # Define area as two points for cv to draw (upper left corner, lower right corner)
-def get_area_points(centre_point):
-    
-    marker_size = marker_image_size(50, 5, camera_param_intrinsic.FOCAL_LENGTH_PX)
+def get_area_points(centre_point, marker_size):
     
     i = centre_point[0]
     j = centre_point[1]
@@ -95,7 +73,7 @@ def get_area_points(centre_point):
 
 
 # Define areas arond markers for identification and location.
-def mark_markers(img, response, debug=False):
+def mark_markers(img, response, marker_image_size, debug=False):
     
     img_marked = img.copy()
     
@@ -150,7 +128,7 @@ def mark_markers(img, response, debug=False):
             
             mean = marker.weighted_mean()
             cv2.circle(img_marked, (int(mean[0]), int(mean[1])), 20, (200,200,255), -1)
-            start_point, end_point = get_area_points((int(mean[0]), int(mean[1])))
+            start_point, end_point = get_area_points((int(mean[0]), int(mean[1])), marker_image_size)
             cv2.rectangle(img_marked, start_point, end_point, color, 5)
             
 
@@ -158,7 +136,5 @@ def mark_markers(img, response, debug=False):
         print("Wrote image to path: 'output/mark_markers.png'")
 
 
-
     return marker_locations
-
 

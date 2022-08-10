@@ -65,7 +65,7 @@ class Marker:
 
     def average_angle(self, angle_grid):
         
-        size = int(self.size / 2)
+        size = int(self.size)
         ulc, _ = get_area_points(self.location, size)
         sum = 0
         for i in range(size):
@@ -136,8 +136,8 @@ def mark_markers(img, response, gradient_angles, marker_image_size, scale_factor
         marker.location = mean
                 
         # angle = gradient_angles[mean[0], mean[1]]
-        angle = marker.average_angle(gradient_angles)
-        marker_rotations.append(angle)
+        angle = (marker.average_angle(gradient_angles) % (pi/2))
+        marker_rotations.append(angle)     
         marker.rotation = angle
         
                 
@@ -161,10 +161,12 @@ def mark_markers(img, response, gradient_angles, marker_image_size, scale_factor
             # Middle point
             cv2.circle(img_marked, location, int(20*scale_factor), (200,200,255), -1)
             # Rectangle around marker
-            start_point, end_point = get_area_points(location, marker_image_size)
-            cv2.rectangle(img_marked, start_point, end_point, color, int(np.ceil(5*scale_factor)))
+            rot_rectangle = (location, (marker_image_size, marker_image_size), np.rad2deg(angle))
+            box = cv2.boxPoints(rot_rectangle) 
+            box = np.int0(box) #Convert into integer values
+            img_marked = cv2.drawContours(img_marked, [box], 0, color, int(np.ceil(5*scale_factor)))
             # Angle of marker
-            cv2.line(img_marked, location, (int(np.cos(angle)*100*scale_factor)+location[0], int(np.sin(angle)*100*scale_factor)+location[1]), color, int(np.ceil(5*scale_factor)))
+            cv2.line(img_marked, location, (int(np.cos(angle)*200*scale_factor)+location[0], int(np.sin(angle)*200*scale_factor)+location[1]), color, int(np.ceil(5*scale_factor)))
             
 
         cv2.imwrite("output/mark_markers.png", img_marked)

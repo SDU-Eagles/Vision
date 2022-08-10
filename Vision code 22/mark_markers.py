@@ -68,8 +68,8 @@ class Marker:
         size = int(self.size)
         ulc, _ = get_area_points(self.location, size)
         sum = 0
-        for i in range(size):
-            for j in range(size):
+        for j in range(size):
+            for i in range(size):
                 sum += angle_grid[ulc[0] + i, ulc[1] + j]
         
         return sum / size**2
@@ -89,8 +89,6 @@ def get_area_points(centre_point, marker_size):
 
 # Define areas arond markers for identification and location.
 def mark_markers(img, response, gradient_angles, marker_image_size, scale_factor = 1, debug=False):
-
-    img_marked = img.copy()
     
     DISTANCE_THRESHOLD = marker_image_size + 20  # Marker size + margin
     VALUE_THRESHOLD = 20
@@ -147,6 +145,9 @@ def mark_markers(img, response, gradient_angles, marker_image_size, scale_factor
 
     # Write images for visual purposes
     if (debug == True):
+        
+        img_marked = img.copy()
+        
         for marker in markers:
             
             color = np.random.randint(256, size=3)

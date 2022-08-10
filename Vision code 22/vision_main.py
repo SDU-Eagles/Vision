@@ -20,9 +20,7 @@ def resize_img(img, height_dim = 4608):
 
 # Expected marker size in image.
 def marker_image_size(marker_world_size, altitude, focal_length):
-    ratio = altitude / marker_world_size
-    marker_image_size = focal_length * ratio    # TODO: Ratio is inverted, WHY does THIS WORK??
-    # marker_image_size = (marker_world_size * focal_length) / altitude
+    marker_image_size = (marker_world_size * focal_length) / altitude
     return marker_image_size
 
 
@@ -49,14 +47,14 @@ def show_cutout(img, centre_point, angle, marker_size):
 
 
 # Load image
-path = "Markers/markers_rotated.png"
-# path = "Sample_images/8-3.jpg"
+# path = "Markers/markers_rotated.png"
+path = "Sample_images/8-3.jpg"
 img = cv2.imread(path)
 img, scale_factor = resize_img(img, 600)
 
 
 # Get marker information
-world_marker_size = 50
+world_marker_size = 0.5
 altitide = 5
 marker_image_size = np.ceil(marker_image_size(world_marker_size, altitide, camera_param_intrinsic.FOCAL_LENGTH_PX) * scale_factor)
 

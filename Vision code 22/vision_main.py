@@ -82,3 +82,5 @@ for location, angle in zip(marker_locations, marker_rotations):
     markerID = identify_marker(cutout, grid_size, scale_factor, debug = True)
 #     print('Marker ID: ', markerID)
 
+print('------')
+

@@ -5,7 +5,7 @@ import numpy as np
 
 '''
 TODO:
-    - Get rotation information
+    - Rotation is not right. Fix!
     - Filter markers with few response points
     - Fix world-marker-size to image-marker-size (resizing world marker causes inverted behaviour, but inverting ration din't work earlier)
 '''
@@ -90,7 +90,7 @@ def get_area_points(centre_point, marker_size):
 # Define areas arond markers for identification and location.
 def mark_markers(img, response, gradient_angles, marker_image_size, scale_factor = 1, debug=False):
     
-    DISTANCE_THRESHOLD = marker_image_size + 20  # Marker size + margin
+    DISTANCE_THRESHOLD = marker_image_size + scale_factor*150  # Marker size + margin
     VALUE_THRESHOLD = 20
 
     markers = []
@@ -164,7 +164,7 @@ def mark_markers(img, response, gradient_angles, marker_image_size, scale_factor
             # Rectangle around marker
             rot_rectangle = (location, (marker_image_size, marker_image_size), np.rad2deg(angle))
             box = cv2.boxPoints(rot_rectangle) 
-            box = np.int0(box) #Convert into integer values
+            box = np.int0(box)  # Convert into integer values
             img_marked = cv2.drawContours(img_marked, [box], 0, color, int(np.ceil(5*scale_factor)))
             # Angle of marker
             cv2.line(img_marked, location, (int(np.cos(angle)*200*scale_factor)+location[0], int(np.sin(angle)*200*scale_factor)+location[1]), color, int(np.ceil(5*scale_factor)))

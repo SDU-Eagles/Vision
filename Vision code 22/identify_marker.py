@@ -8,6 +8,7 @@ import numpy as np
 TODO: 
     - Change looping tile method. Perhaps only locally in the middle of each tile, rather than all of it.
     - Robustness!
+    - Find closest match, rather than exact match
 '''
 
 
@@ -67,11 +68,7 @@ def identify_marker(img_marker, grid_size, scale_factor, debug=False):
             # Loop indicies increments
             i += 1    
         j += 1
-            
-            
-    
-    print(marker_values)
-    
+
 
     markerID = None
     patterns = marker_patterns()
@@ -86,7 +83,6 @@ def identify_marker(img_marker, grid_size, scale_factor, debug=False):
         print("Wrote image to path: 'output/identify_marker.png'")
         
         print(f"Marker has ID: {markerID}")
-
 
 
     return markerID

@@ -10,7 +10,7 @@ from locate_marker import locate_marker
 
 '''
 TODO: 
-- All kernels are scaled with scale_factor, however they must be an uneven number, 
+- All kernels are scaled with scale_factor, however some must be an uneven number (not all?), 
 which is not gaurenteed to be the case as of now.
 '''
 

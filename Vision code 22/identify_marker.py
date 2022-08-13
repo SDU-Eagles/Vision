@@ -8,7 +8,6 @@ import numpy as np
 TODO: 
     - Change looping tile method. Perhaps only locally in the middle of each tile, rather than all of it.
     - Robustness!
-    - Find closest match, rather than exact match
 '''
 
 
@@ -73,8 +72,9 @@ def identify_marker(img_marker, grid_size, scale_factor, debug=False):
     markerID = None
     patterns = marker_patterns()
     for ID, pattern in enumerate(patterns):
-        isEqual = np.array_equal(marker_values, pattern)
-        if isEqual:
+        # isEqual = np.array_equal(marker_values, pattern)
+        isEqual = np.sum(marker_values == pattern)
+        if isEqual > 20:
             markerID = ID + 1
             
             

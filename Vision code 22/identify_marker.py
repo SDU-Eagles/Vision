@@ -26,7 +26,7 @@ def identify_marker(img_marker, grid_size, scale_factor, debug=False):
     
     
     img_size, _ = img_binary.shape
-    tile_size = int(np.round(img_size / grid_size))
+    tile_size = int(np.ceil(img_size / grid_size))
     marker_values = np.zeros((grid_size, grid_size))
     
     # Loop indicies

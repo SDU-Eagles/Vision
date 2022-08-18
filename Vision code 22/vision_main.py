@@ -14,7 +14,7 @@ TODO:
 which is not gaurenteed to be the case as of now.
 '''
 
-# Draw debug info to copy of image
+# Draw debug info onto image
 def debug_info_img(img, location, angle, markerID, scale_factor):
     color = np.random.randint(256, size=3)
     color = (int(color[0]), int(color[1]), int(color[2]))
@@ -76,16 +76,17 @@ def marker_cutout(img, centre_point, angle, marker_size, debug=False):
 
 
 # Load image
-path = "Markers/markers_rotated.png"
-# path = "Sample_images/9.jpg"
+# path = "Markers/markers_rotated.png"
+path = "Sample_images/13.jpg"
 img = cv2.imread(path)
-img, scale_factor = resize_img(img, 600)
+img, scale_factor = resize_img(img, 1000)
+# scale_factor = 1
 
 
 # Get marker information
 grid_size = 5
 world_marker_size = 0.5
-altitide = 5
+altitide = 10
 marker_image_size = marker_image_size(world_marker_size, altitide, camera_param_intrinsic.FOCAL_LENGTH_PX)
 marker_image_size = np.ceil(marker_image_size * scale_factor)
 
@@ -100,7 +101,6 @@ for location, angle in zip(marker_locations, marker_rotations):
     cutout = marker_cutout(img, location, angle, marker_image_size, debug = False)
 
     markerID = identify_marker(cutout, grid_size, scale_factor, debug = False)
-    
     debug_info_img(img_marked, location, angle, markerID, scale_factor)
 
 

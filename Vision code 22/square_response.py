@@ -27,16 +27,10 @@ def square_response(img, marker_image_size, debug=False):
     v2_real = cv2.filter2D(np.real(v2), -1, kernel)
     v2_imag = cv2.filter2D(np.imag(v2), -1, kernel)
     gradient_vectors = v2_real + v2_imag*(1j)
-    
-    # angles = np.zeros(gradient_vectors.shape)
-    # for i, row in enumerate(gradient_vectors):
-    #     for j, c in enumerate(row):
-    #         angle = np.angle(c)
-    #         angles[i, j] = angle
 
 
     # Angle of complex numbers
-    angles = cv2.phase(v2_real, v2_imag)
+    angles = cv2.phase(v2_real, v2_imag) / 4    # Go from 0:2pi to 0:pi/2
     angles = np.transpose(angles)
 
 

@@ -10,7 +10,7 @@ TODO:
     - Rotation is not right. Fix!
     - Make failsafes for out-of-bound markers (markers on edges of image)
     - Is min_response_points robust to different image sizes?
-    - Fix circular mean method!
+    - Fix circular mean method! Or alternative?
 '''
 
 
@@ -68,15 +68,6 @@ class Marker:
 
     def average_angle(self, angle_grid):
         
-        size = int(self.size)
-        ulc, _ = get_area_points(self.location, size)
-        sum = 0
-        for j in range(size):
-            for i in range(size):
-                sum += angle_grid[ulc[0] + i, ulc[1] + j]
-        
-        return sum / size**2
-    
         # # Circular mean
         # size = int(self.size)
         # ulc, _ = get_area_points(self.location, size)
@@ -84,14 +75,38 @@ class Marker:
         # sum_y = 0
         # for j in range(size):
         #     for i in range(size):
-        #         angle = angle_grid[ulc[0] + i, ulc[1] + j]
+        #         angle = angle_grid[ulc[0] + i, ulc[1] + j] * 4  # 0:90 to 0:360 for circular mean
         #         sum_x += np.cos(angle)
         #         sum_y += np.sin(angle)
         
-        # return atan2(sum_x, sum_y)
-    
-    
+        # angle_avg = atan2(sum_x, sum_y) / 4 # 0:360 to 0:90
+        # print(np.rad2deg(angle_avg))
+        # return angle_avg
         
+                
+        size = int(self.size)
+        ulc, _ = get_area_points(self.location, size)
+        sum = 0
+        for j in range(size):
+            for i in range(size):
+                angle = angle_grid[ulc[0] + i, ulc[1] + j]
+                sum += angle
+                
+                if (i == 0 and j == 0):
+                    min = angle; max = angle
+                elif (angle < min):
+                    min = angle
+                elif (angle > max):
+                    max = angle
+        
+        avg_angle = sum / size**2
+        if ((max - min) > (pi/4)):
+            avg_angle += pi/4
+        
+        return avg_angle  
+    
+    
+
 
 
 # Define area as two points for cv to draw (upper left corner, lower right corner)

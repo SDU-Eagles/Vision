@@ -87,7 +87,7 @@ img, scale_factor = resize_img(img, 1000)
 # Get marker information
 grid_size = 5
 world_marker_size = 0.5
-altitide = 6
+altitide = 5
 marker_image_size = marker_image_size(world_marker_size, altitide, camera_param_intrinsic.FOCAL_LENGTH_PX)
 marker_image_size = np.ceil(marker_image_size * scale_factor)
 

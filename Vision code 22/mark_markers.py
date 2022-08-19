@@ -1,4 +1,6 @@
 from cmath import pi
+from lib2to3.pgen2 import grammar
+from math import atan2
 import cv2
 import numpy as np
 
@@ -6,8 +8,9 @@ import numpy as np
 '''
 TODO:
     - Rotation is not right. Fix!
-    - Filter markers with few response points
-    - Fix world-marker-size to image-marker-size (resizing world marker causes inverted behaviour, but inverting ration din't work earlier)
+    - Make failsafes for out-of-bound markers (markers on edges of image)
+    - Is min_response_points robust to different image sizes?
+    - Change angle average to be calculated as circular mean!
 '''
 
 
@@ -65,14 +68,30 @@ class Marker:
 
     def average_angle(self, angle_grid):
         
+        # size = int(self.size)
+        # ulc, _ = get_area_points(self.location, size)
+        # sum = 0
+        # for j in range(size):
+        #     for i in range(size):
+        #         sum += angle_grid[ulc[0] + i, ulc[1] + j]
+        
+        # return sum / size**2
+    
+        # Circular mean
         size = int(self.size)
         ulc, _ = get_area_points(self.location, size)
-        sum = 0
+        sum_x = 0
+        sum_y = 0
         for j in range(size):
             for i in range(size):
-                sum += angle_grid[ulc[0] + i, ulc[1] + j]
+                angle = angle_grid[ulc[0] + i, ulc[1] + j]
+                sum_x += np.cos(angle)
+                sum_y += np.sin(angle)
         
-        return sum / size**2
+        return atan2(sum_x, sum_y)
+    
+    
+        
 
 
 # Define area as two points for cv to draw (upper left corner, lower right corner)
@@ -123,18 +142,24 @@ def mark_markers(img, response, gradient_angles, marker_image_size, scale_factor
                     if no_marker_fit:
                         markers.append(Marker(point, marker_image_size))
      
-                        
+     
     # Get middle point and angle of markers     
     marker_locations = []
     marker_rotations = []
     
     for marker in markers:
+        # Remove markers with few points
+        min_response_points = 50
+        if (len(marker.points) < min_response_points):
+            markers.remove(marker)
+            continue
+        
         mean = marker.weighted_mean()
         marker_locations.append(mean)
         marker.location = mean
                 
-        # angle = gradient_angles[mean[0], mean[1]]
-        angle = (marker.average_angle(gradient_angles) % (pi/2))
+        angle = marker.average_angle(gradient_angles)
+        # angle = marker.average_angle(gradient_angles) % (pi/2)
         marker_rotations.append(angle)     
         marker.rotation = angle
         

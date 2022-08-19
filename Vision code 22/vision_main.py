@@ -15,14 +15,14 @@ which is not gaurenteed to be the case as of now.
 '''
 
 # Draw debug info onto image
-def debug_info_img(img, location, angle, markerID, scale_factor):
+def debug_info_img(img, location, angle, markerID, marker_size, scale_factor):
     color = np.random.randint(256, size=3)
     color = (int(color[0]), int(color[1]), int(color[2]))
     
     # Middle point
     cv2.circle(img, location, int(20*scale_factor), (200,200,255), -1)
     # Rectangle around marker
-    rot_rectangle = (location, (marker_image_size, marker_image_size), np.rad2deg(angle))
+    rot_rectangle = (location, (marker_size, marker_size), np.rad2deg(angle))
     box = cv2.boxPoints(rot_rectangle) 
     box = np.int0(box)  # Convert into integer values
     img = cv2.drawContours(img, [box], 0, color, int(np.ceil(5*scale_factor)))
@@ -30,7 +30,8 @@ def debug_info_img(img, location, angle, markerID, scale_factor):
     eol_point = (int(np.cos(angle)*200*scale_factor)+location[0], int(np.sin(angle)*200*scale_factor)+location[1])
     cv2.line(img, location, eol_point, color, int(np.ceil(5*scale_factor)))
     # Marker ID by marker
-    cv2.putText(img, str(markerID), eol_point, cv2.FONT_HERSHEY_SIMPLEX, 4*scale_factor, color, int(np.ceil(8*scale_factor)), cv2.LINE_AA)
+    text = "ID: " + str(markerID) + ", angle: " + str(int(np.round(np.rad2deg(angle)))) + "[deg]"
+    cv2.putText(img, text, eol_point, cv2.FONT_HERSHEY_SIMPLEX, 4*scale_factor, color, int(np.ceil(8*scale_factor)), cv2.LINE_AA)
     
     cv2.imwrite("output/debug_info.png", img)
 
@@ -77,7 +78,7 @@ def marker_cutout(img, centre_point, angle, marker_size, debug=False):
 
 # Load image
 # path = "Markers/markers_rotated.png"
-path = "Sample_images/13.jpg"
+path = "Sample_images/10.jpg"
 img = cv2.imread(path)
 img, scale_factor = resize_img(img, 1000)
 # scale_factor = 1
@@ -86,7 +87,7 @@ img, scale_factor = resize_img(img, 1000)
 # Get marker information
 grid_size = 5
 world_marker_size = 0.5
-altitide = 10
+altitide = 6
 marker_image_size = marker_image_size(world_marker_size, altitide, camera_param_intrinsic.FOCAL_LENGTH_PX)
 marker_image_size = np.ceil(marker_image_size * scale_factor)
 
@@ -100,8 +101,8 @@ img_marked = img.copy()
 for location, angle in zip(marker_locations, marker_rotations):
     cutout = marker_cutout(img, location, angle, marker_image_size, debug = False)
 
-    markerID = identify_marker(cutout, grid_size, scale_factor, debug = False)
-    debug_info_img(img_marked, location, angle, markerID, scale_factor)
+    markerID = identify_marker(cutout, grid_size, scale_factor, debug = True)
+    debug_info_img(img_marked, location, angle, markerID, marker_image_size, scale_factor)
 
 
 print("Wrote image to path: 'output/debug_info.png'")

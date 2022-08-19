@@ -32,6 +32,7 @@ def square_response(img, marker_image_size, debug=False):
     # Angle of complex numbers
     angles = cv2.phase(v2_real, v2_imag) / 4    # Go from 0:2pi to 0:pi/2
     angles = np.transpose(angles)
+    
 
 
     # Square response (normalised to 0-100)
@@ -49,7 +50,8 @@ def square_response(img, marker_image_size, debug=False):
         orien = cv2.phase(v2_real, v2_imag, angleInDegrees=True)
         orien = orien / 2. # Go from 0:360 to 0:180 
         hsv = np.zeros_like(img)
-        hsv[..., 0] = orien # H (in OpenCV between 0:180)
+        # hsv[..., 0] = orien # H (in OpenCV between 0:180)
+        hsv[..., 0] = np.rad2deg(np.transpose(angles)) # H (in OpenCV between 0:90)
         hsv[..., 1] = 255 # S
         hsv[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX) # V 0:255
 
@@ -60,6 +62,7 @@ def square_response(img, marker_image_size, debug=False):
         
         
     return response, angles
+
 
 
 

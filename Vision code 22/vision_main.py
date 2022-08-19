@@ -77,8 +77,8 @@ def marker_cutout(img, centre_point, angle, marker_size, debug=False):
 
 
 # Load image
-# path = "Markers/markers_rotated.png"
-path = "Sample_images/10.jpg"
+path = "Markers/markers_rotated.png"
+# path = "Sample_images/8.jpg"
 img = cv2.imread(path)
 img, scale_factor = resize_img(img, 1000)
 # scale_factor = 1

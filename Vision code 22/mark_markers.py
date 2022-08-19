@@ -10,7 +10,7 @@ TODO:
     - Rotation is not right. Fix!
     - Make failsafes for out-of-bound markers (markers on edges of image)
     - Is min_response_points robust to different image sizes?
-    - Change angle average to be calculated as circular mean!
+    - Fix circular mean method!
 '''
 
 
@@ -68,27 +68,27 @@ class Marker:
 
     def average_angle(self, angle_grid):
         
-        # size = int(self.size)
-        # ulc, _ = get_area_points(self.location, size)
-        # sum = 0
-        # for j in range(size):
-        #     for i in range(size):
-        #         sum += angle_grid[ulc[0] + i, ulc[1] + j]
-        
-        # return sum / size**2
-    
-        # Circular mean
         size = int(self.size)
         ulc, _ = get_area_points(self.location, size)
-        sum_x = 0
-        sum_y = 0
+        sum = 0
         for j in range(size):
             for i in range(size):
-                angle = angle_grid[ulc[0] + i, ulc[1] + j]
-                sum_x += np.cos(angle)
-                sum_y += np.sin(angle)
+                sum += angle_grid[ulc[0] + i, ulc[1] + j]
         
-        return atan2(sum_x, sum_y)
+        return sum / size**2
+    
+        # # Circular mean
+        # size = int(self.size)
+        # ulc, _ = get_area_points(self.location, size)
+        # sum_x = 0
+        # sum_y = 0
+        # for j in range(size):
+        #     for i in range(size):
+        #         angle = angle_grid[ulc[0] + i, ulc[1] + j]
+        #         sum_x += np.cos(angle)
+        #         sum_y += np.sin(angle)
+        
+        # return atan2(sum_x, sum_y)
     
     
         

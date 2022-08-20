@@ -7,10 +7,8 @@ import numpy as np
 
 '''
 TODO:
-    - Rotation is not right. Fix!
     - Make failsafes for out-of-bound markers (markers on edges of image)
     - Is min_response_points robust to different image sizes?
-    - Fix circular mean method! Or alternative?
 '''
 
 
@@ -67,44 +65,26 @@ class Marker:
     
 
     def average_angle(self, angle_grid):
-        
-        # # Circular mean
-        # size = int(self.size)
-        # ulc, _ = get_area_points(self.location, size)
-        # sum_x = 0
-        # sum_y = 0
-        # for j in range(size):
-        #     for i in range(size):
-        #         angle = angle_grid[ulc[0] + i, ulc[1] + j] * 4  # 0:90 to 0:360 for circular mean
-        #         sum_x += np.cos(angle)
-        #         sum_y += np.sin(angle)
-        
-        # angle_avg = atan2(sum_x, sum_y) / 4 # 0:360 to 0:90
-        # print(np.rad2deg(angle_avg))
-        # return angle_avg
-        
-                
+
+        # Circular mean alternative. It keeps acuracy, but still catches angles around the 90-0 border 
         size = int(self.size)
         ulc, _ = get_area_points(self.location, size)
+        all_angles = []
         sum = 0
         for j in range(size):
             for i in range(size):
                 angle = angle_grid[ulc[0] + i, ulc[1] + j]
+                all_angles.append(angle)
                 sum += angle
-                
-                if (i == 0 and j == 0):
-                    min = angle; max = angle
-                elif (angle < min):
-                    min = angle
-                elif (angle > max):
-                    max = angle
         
         avg_angle = sum / size**2
-        if ((max - min) > (pi/4)):
-            avg_angle += pi/4
-        
+
+        VAR_THRESHOLD = 0.4
+        if (np.var(all_angles) > VAR_THRESHOLD):   
+            print("Marker with variance: " + str(np.var(all_angles)) + " was rotated")
+            avg_angle += pi/4   # Shift average
+                
         return avg_angle  
-    
     
 
 
@@ -164,8 +144,8 @@ def mark_markers(img, response, gradient_angles, marker_image_size, scale_factor
     
     for marker in markers:
         # Remove markers with few points
-        min_response_points = 50
-        if (len(marker.points) < min_response_points):
+        MIN_RESPONSE_POINTS = 50
+        if (len(marker.points) < MIN_RESPONSE_POINTS):
             markers.remove(marker)
             continue
         

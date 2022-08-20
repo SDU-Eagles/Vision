@@ -8,7 +8,7 @@ import numpy as np
 TODO: 
     - Change looping tile method. Perhaps only locally in the middle of each tile, rather than all of it.
     - Robustness!
-    - Handle if multiple markers are over equal threshold (20 as of now). Use highest value
+    - Handle if multiple markers are over EQUAL_THRESHOLD (20 as of now) -> Use highest value
 '''
 
 
@@ -72,9 +72,10 @@ def identify_marker(img_marker, grid_size, scale_factor, debug=False):
 
     markerID = None
     patterns = marker_patterns()
+    EQUAL_THRESHOLD = 20
     for ID, pattern in enumerate(patterns):
         isEqual = np.sum(marker_values == pattern)
-        if isEqual > 20:
+        if isEqual > EQUAL_THRESHOLD:
             markerID = ID + 1
             
             

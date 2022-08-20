@@ -12,6 +12,18 @@ from locate_marker import locate_marker
 TODO: 
 - All kernels are scaled with scale_factor, however some must be an uneven number (not all?), 
 which is not gaurenteed to be the case as of now.
+- This algorithm is very sensitive to altitude/scale, especially if the middlepoint is not exact
+
+Tuneable parameters:
+    vision_main.py
+    - Image size
+    mark_markers.py
+    - VALUE_THRESHOLD: How intese the response should be to be accepted
+    - DISTANCE_THRESHOLD: How close points can be to be considered part of the same marker
+    - MIN_RESPONSE_POINTS: The least amount of points in a cluster, that can be considered a marker
+    - VAR_THRESHOLD: Variance threshold for circular mean problem (calculate average angle)
+    identify_marker.py
+    - EQUAL_THRESHOLD: How many gridpoints should match between marker and patterns, to consider it a match
 '''
 
 # Draw debug info onto image
@@ -77,8 +89,8 @@ def marker_cutout(img, centre_point, angle, marker_size, debug=False):
 
 
 # Load image
-path = "Markers/markers_rotated.png"
-# path = "Sample_images/8.jpg"
+# path = "Markers/markers_rotated.png"
+path = "Sample_images/12.jpg"
 img = cv2.imread(path)
 img, scale_factor = resize_img(img, 1000)
 # scale_factor = 1
@@ -87,7 +99,7 @@ img, scale_factor = resize_img(img, 1000)
 # Get marker information
 grid_size = 5
 world_marker_size = 0.5
-altitide = 5
+altitide = 15
 marker_image_size = marker_image_size(world_marker_size, altitide, camera_param_intrinsic.FOCAL_LENGTH_PX)
 marker_image_size = np.ceil(marker_image_size * scale_factor)
 
@@ -95,6 +107,7 @@ marker_image_size = np.ceil(marker_image_size * scale_factor)
 response, gradient_angles = square_response(img, marker_image_size, debug = True)
 marker_locations, marker_rotations = mark_markers(img, response, gradient_angles, marker_image_size, scale_factor, debug = False)
 
+print(f"Found {len(marker_locations)} markers")
 
 img_marked = img.copy()
 
@@ -106,4 +119,3 @@ for location, angle in zip(marker_locations, marker_rotations):
 
 
 print("Wrote image to path: 'output/debug_info.png'")
-print(f"Found {len(marker_locations)} markers")

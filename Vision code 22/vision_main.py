@@ -32,7 +32,7 @@ def debug_info_img(img, location, angle, markerID, marker_size, scale_factor):
     color = (int(color[0]), int(color[1]), int(color[2]))
     
     # Middle point
-    cv2.circle(img, location, int(20*scale_factor), (200,200,255), -1)
+    # cv2.circle(img, location, int(20*scale_factor), (200,200,255), -1)
     # Rectangle around marker
     rot_rectangle = (location, (marker_size, marker_size), np.rad2deg(angle))
     box = cv2.boxPoints(rot_rectangle) 
@@ -90,16 +90,16 @@ def marker_cutout(img, centre_point, angle, marker_size, debug=False):
 
 # Load image
 # path = "Markers/markers_rotated.png"
-path = "Sample_images/12.jpg"
+path = "Sample_images/DJI_0690.jpg"
 img = cv2.imread(path)
-img, scale_factor = resize_img(img, 1000)
-# scale_factor = 1
+# img, scale_factor = resize_img(img, 1000)
+scale_factor = 1
 
 
 # Get marker information
 grid_size = 5
 world_marker_size = 0.5
-altitide = 15
+altitide = 35
 marker_image_size = marker_image_size(world_marker_size, altitide, camera_param_intrinsic.FOCAL_LENGTH_PX)
 marker_image_size = np.ceil(marker_image_size * scale_factor)
 
